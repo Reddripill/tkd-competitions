@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-   --color-accent: #04ffc0;
+   --color-light-white: #f7f8fa;
+   --color-gray: #ebebed;
+
+   --default-transition-duration: 300ms;
 }
 
 body {
@@ -11,7 +14,7 @@ body {
 @layer base {
    html,
    body {
-      @apply w-full max-w-full bg-white text-black;
+      @apply h-full max-w-full bg-white text-black;
    }
    :focus,
    :focus-visible {
