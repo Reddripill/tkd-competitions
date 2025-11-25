@@ -10,7 +10,7 @@ const Sidebar = () => {
          <div className="h-full flex flex-col">
             <Link
                href="/"
-               className="flex items-center gap-x-2 px-6 pb-8 border-b border-zinc-400/20"
+               className="flex items-center gap-x-3 pl-6 pb-8 border-b border-zinc-400/20"
             >
                <Image height={50} width={50} src="/tkd-logo.png" alt="ГТФ РТ" />
                <div className="font-bold text-sm">

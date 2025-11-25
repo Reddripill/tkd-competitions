@@ -1,13 +1,13 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 
-const AdminPage = () => {
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
    return (
       <div className="h-full w-full flex">
          <Sidebar />
-         <div className="grow">MAIN</div>
+         <div className="grow">{children}</div>
       </div>
    );
 };
 
-export default AdminPage;
+export default AdminLayout;
