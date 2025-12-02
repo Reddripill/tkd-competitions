@@ -3,6 +3,7 @@
 @theme {
    --color-light-white: #f7f8fa;
    --color-gray: #ebebed;
+   --color-blue-accent: rgb(0, 107, 215);
 
    --default-transition-duration: 300ms;
 }
@@ -24,6 +25,6 @@ body {
       @apply cursor-pointer;
    }
    h1 {
-      @apply text-3xl font-bold tracking-wide;
+      @apply text-4xl font-bold tracking-wide;
    }
 }

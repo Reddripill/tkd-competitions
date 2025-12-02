@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
-import { menuItems } from "@/src/constants/dashboard-menu";
+import { menuItems } from "@/constants/dashboard-menu";
 
 const Sidebar = () => {
    return (

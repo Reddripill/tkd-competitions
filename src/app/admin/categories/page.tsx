@@ -1,13 +1,13 @@
 import React from "react";
 import { Metadata } from "next";
-import UsersPage from "@/components/admin/screens/users/UsersPage";
+import CategoriesPage from "@/components/admin/screens/categories/CategoriesPage";
 
 export const metadata: Metadata = {
-   title: "Пользователи",
+   title: "Категории",
 };
 
 const Page = () => {
-   return <UsersPage />;
+   return <CategoriesPage />;
 };
 
 export default Page;

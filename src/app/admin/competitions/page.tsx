@@ -1,12 +1,13 @@
 import React from "react";
 import { Metadata } from "next";
+import CompetitionsPage from "@/components/admin/screens/competitions/CompetitionsPage";
 
 export const metadata: Metadata = {
    title: "Соревнования",
 };
 
-const page = () => {
-   return <div>page</div>;
+const Page = () => {
+   return <CompetitionsPage />;
 };
 
-export default page;
+export default Page;

@@ -1,4 +1,5 @@
 import {
+   ChartColumnDecreasing,
    ClipboardEdit,
    LayoutDashboard,
    ListPlus,
@@ -9,20 +10,25 @@ import { ROUTES } from "./routes";
 
 export interface IMenuItem {
    logo: LucideIcon;
-   title: string;
    link: string;
+   title: string;
 }
 
 export const menuItems: IMenuItem[] = [
    {
       title: "Панель",
       logo: LayoutDashboard,
-      link: "/",
+      link: ROUTES.HOME,
    },
    {
       title: "Дисциплины",
       logo: ListPlus,
       link: ROUTES.DISCIPLINES,
+   },
+   {
+      title: "Категории",
+      logo: ChartColumnDecreasing,
+      link: ROUTES.CATEGORIES,
    },
    {
       title: "Соревнования",
@@ -33,5 +39,6 @@ export const menuItems: IMenuItem[] = [
       title: "Пользователи",
       logo: User,
       link: ROUTES.USERS,
+      // title: "Список авторизованных пользователей",
    },
 ];

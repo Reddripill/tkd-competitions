@@ -1,5 +1,5 @@
 import React from "react";
-import AdminLayout from "@/src/components/admin/AdminLayout";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const layout = ({ children }: { children: React.ReactNode }) => {
    return (
