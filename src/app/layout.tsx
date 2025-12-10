@@ -1,7 +1,7 @@
 import { Roboto } from "next/font/google";
-import AppChakraProvider from "@/providers/ChakraProvider";
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryProvider from "@/providers/QueryProvider";
 
 export const metadata: Metadata = {
    title: "Расписание соревнование ТКД по тхэквондо",
@@ -19,9 +19,9 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="ru" suppressHydrationWarning>
-         <body className={roboto.className}>
-            <AppChakraProvider>{children}</AppChakraProvider>
-         </body>
+         <QueryProvider>
+            <body className={roboto.className}>{children}</body>
+         </QueryProvider>
       </html>
    );
 }

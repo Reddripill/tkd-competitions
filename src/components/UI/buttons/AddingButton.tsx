@@ -1,18 +1,18 @@
-import React from "react";
-import { ActionButtonLink } from "./ActionButton";
 import { Plus } from "lucide-react";
+import { Button } from "./button";
+import Link from "next/link";
 
 const AddingButton = ({ link }: { link: string }) => {
    return (
-      <ActionButtonLink
-         className="bg-blue-accent! hover:bg-blue-accent/80! transition-colors"
-         link={link}
+      <Button
+         asChild={true}
+         className="bg-blue-accent hover:bg-blue-accent/80 transition-colors"
       >
-         <div className="flex items-center gap-x-2 text-white">
+         <Link href={link} className="flex items-center gap-x-2 text-white">
             <Plus />
             <div>Добавить</div>
-         </div>
-      </ActionButtonLink>
+         </Link>
+      </Button>
    );
 };
 

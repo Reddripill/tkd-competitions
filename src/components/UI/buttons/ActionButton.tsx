@@ -1,38 +1,24 @@
 import React from "react";
-import Link from "next/link";
-import { Button, ButtonProps } from "@chakra-ui/react";
-import cn from "classnames";
+import { Button, buttonVariants } from "./button";
+import { VariantProps } from "class-variance-authority";
 
-interface ICommonProps {
-   children: React.ReactNode;
-   className?: string;
-}
-
-interface IButtonProps extends ICommonProps {
+interface IProps
+   extends React.ComponentProps<"button">,
+      VariantProps<typeof buttonVariants> {
    action: () => void;
 }
 
-interface ILinkProps extends ICommonProps {
-   link: string;
-}
-
-const baseConfig: ButtonProps = {
-   size: "xl",
-   rounded: "lg",
-};
-
-export const ActionButton = ({ children, action, className }: IButtonProps) => {
+const ActionButton = ({ action, ...props }: IProps) => {
    return (
-      <Button className={cn(className)} onClick={action} {...baseConfig}>
-         {children}
+      <Button
+         type="button"
+         onClick={action}
+         className="bg-blue-accent hover:bg-blue-accent/80 transition-colors text-white"
+         {...props}
+      >
+         <div>Добавить</div>
       </Button>
    );
 };
 
-export const ActionButtonLink = ({ children, link, className }: ILinkProps) => {
-   return (
-      <Button className={cn(className)} asChild={true} {...baseConfig}>
-         <Link href={link}>{children}</Link>
-      </Button>
-   );
-};
+export default ActionButton;

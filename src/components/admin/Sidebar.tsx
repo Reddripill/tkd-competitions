@@ -1,10 +1,14 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { menuItems } from "@/constants/dashboard-menu";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
+   const pathname = usePathname();
    return (
       <div className="h-full basis-[320px] py-4 bg-light-white">
          <div className="h-full flex flex-col">
@@ -17,13 +21,18 @@ const Sidebar = () => {
                   Федерация Тхэквондо ГТФ Республики Татарстан
                </div>
             </Link>
-            <menu className="grow pt-12">
+            <menu className="grow pt-12 pb-8 overflow-auto">
                <ul>
                   {menuItems.map(item => (
                      <li key={item.title} className="px-6 h-12">
                         <Link
                            href={item.link}
-                           className="h-full flex items-center gap-x-2 pl-4 text-[#7e7e80] hover:bg-gray hover:text-black rounded-xl transition-colors"
+                           className={cn(
+                              "h-full flex items-center gap-x-2 pl-4 text-[#7e7e80] hover:bg-gray hover:text-black rounded-xl transition-colors",
+                              {
+                                 "bg-gray text-black": pathname === item.link,
+                              }
+                           )}
                         >
                            <item.logo />
                            <div className="text-lg font-medium">
