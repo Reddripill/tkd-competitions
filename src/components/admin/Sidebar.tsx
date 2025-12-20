@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const Sidebar = () => {
    const pathname = usePathname();
    return (
-      <div className="h-full basis-[320px] py-4 bg-light-white">
+      <div className="h-full shrink-0 basis-[320px] py-4 bg-light-white">
          <div className="h-full flex flex-col">
             <Link
                href="/"

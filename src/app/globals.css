@@ -7,9 +7,13 @@
    --color-light-white: #fafafa;
    --color-gray: #e7e5e3;
    --color-blue-accent: rgb(0, 107, 215);
+   /* --color-ring: rgba(0, 107, 215, 0.5); */
    --color-ring: rgb(130, 137, 145);
    --color-border: #eeeeee;
+   --color-border-gray: #f1f1f1;
    --shadow-main: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+   --shadow-border: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
+      rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
 
    --default-transition-duration: 300ms;
 }
