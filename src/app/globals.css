@@ -6,7 +6,9 @@
 @theme {
    --color-light-white: #fafafa;
    --color-gray: #e7e5e3;
+   --color-light-gray: #f6f6f6;
    --color-blue-accent: rgb(0, 107, 215);
+   --color-red-accent: #c74b4b;
    /* --color-ring: rgba(0, 107, 215, 0.5); */
    --color-ring: rgb(130, 137, 145);
    --color-border: #eeeeee;

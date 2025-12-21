@@ -50,7 +50,7 @@ const Sidebar = () => {
                </div>
                <button
                   type="button"
-                  className="text-black transition-colors hover:text-[#c74b4b]"
+                  className="text-black transition-colors hover:text-red-accent"
                >
                   <LogOut />
                </button>
