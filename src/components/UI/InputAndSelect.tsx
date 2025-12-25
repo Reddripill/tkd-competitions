@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 interface IProps {
    changeHandler: (value: string) => void;
-   blurHandler?: () => void;
+   blurHandler: () => void;
    unselectHandler?: (value: string) => void;
    isMulti?: boolean;
    isValid?: boolean;
@@ -63,14 +63,36 @@ const InputAndSelect = ({
    );
 
    const closeHandler = () => {
-      setOpen(false);
-      setHoverIndex(0);
+      if (open) {
+         setOpen(false);
+         setHoverIndex(0);
+         blurHandler();
+      }
    };
+
    useOutside(commandRef, closeHandler);
 
+   const onChangeHandler = (val: string) => {
+      setValue(val);
+      if (!isMulti) {
+         changeHandler(val);
+      }
+   };
+
+   const onBlurHandler = (e: React.FocusEvent<HTMLInputElement, Element>) => {
+      const commandEl = commandRef.current;
+      if (
+         !e.relatedTarget ||
+         (commandEl && !commandEl.contains(e.relatedTarget))
+      ) {
+         blurHandler();
+      }
+   };
+
    const chooseHandler = (value: string) => {
+      onChangeHandler(value);
       closeHandler();
-      setValue(value);
+      blurHandler();
    };
 
    const submitHandler = () => {
@@ -122,17 +144,18 @@ const InputAndSelect = ({
                   <CommandInput
                      value={value}
                      onValueChange={val => {
-                        setValue(val);
-                        if (!isMulti) {
-                           changeHandler(val);
-                        }
+                        onChangeHandler(val);
                      }}
-                     onBlur={blurHandler}
                      onKeyDown={handleKeyDown}
-                     onClick={() => setOpen(true)}
-                     onFocus={() => setOpen(true)}
+                     onClick={() => {
+                        setOpen(true);
+                     }}
+                     onBlur={onBlurHandler}
+                     onFocus={() => {
+                        setOpen(true);
+                     }}
                      className={cn({
-                        "border-red-accent focus-within:border-red-accent focus-within:ring-red-accent/80":
+                        "border-red-accent text-red-accent focus-within:border-red-accent focus-within:ring-red-accent/80":
                            !isValid,
                      })}
                   />

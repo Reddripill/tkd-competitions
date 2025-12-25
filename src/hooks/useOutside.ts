@@ -2,7 +2,7 @@ import { RefObject, useEffect } from "react";
 
 const useOutside = (ref: RefObject<Element | null>, action: () => void) => {
    useEffect(() => {
-      const handler = (e: MouseEvent) => {
+      const handler = (e: MouseEvent | Event) => {
          if (ref.current && !ref.current.contains(e.target as Node)) {
             action();
          }

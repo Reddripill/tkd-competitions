@@ -8,10 +8,10 @@ import ActionButton from "@/components/UI/buttons/ActionButton";
 import { Plus } from "lucide-react";
 import { API } from "@/constants/api";
 import { newCompetitionSchema } from "./new-competition.schema";
-import FormInput from "@/components/UI/FormInput";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { Spinner } from "@/components/UI/lib-components/spinner";
+import { Toaster, toast } from "sonner";
 
 const NewCompetitionPage = () => {
    const form = useForm({
@@ -33,8 +33,18 @@ const NewCompetitionPage = () => {
          onBlur: newCompetitionSchema,
       },
    });
+   const submitForm = async () => {
+      try {
+         await form.handleSubmit();
+         toast.success("Соревнование создано");
+      } catch (err) {
+         toast.error("Ошибка при создании формы");
+         console.log(err);
+      }
+   };
    return (
       <MainBlock title="Создание нового соревнования">
+         <Toaster position="top-center" expand={true} richColors={true} />
          <div className="flex justify-between gap-x-24 w-full">
             <form
                onSubmit={e => {
@@ -47,20 +57,23 @@ const NewCompetitionPage = () => {
                   <form.Field name="tournamentTitle">
                      {field => {
                         return (
-                           <FormInput
-                              id={field.name}
-                              label="Название соревнования *"
-                              name={field.name}
-                              value={field.state.value}
-                              className="border p-8 rounded-lg border-border-gray shadow-border"
-                              isValid={
-                                 field.state.meta.isValid ||
-                                 !field.state.meta.isTouched
-                              }
-                              message={field.state.meta.errors[0]?.message}
-                              onBlur={field.handleBlur}
-                              onChange={e => field.handleChange(e.target.value)}
-                           />
+                           <div className="border p-8 rounded-lg border-border-gray shadow-border">
+                              <InputAndSelect
+                                 isMulti={false}
+                                 label="Название соревнования *"
+                                 isValid={
+                                    field.state.meta.isValid ||
+                                    !field.state.meta.isTouched
+                                 }
+                                 message={field.state.meta.errors[0]?.message}
+                                 source={API.TOURNAMENTS}
+                                 queryKey={QUERY_KEYS.TOURNAMENTS}
+                                 changeHandler={val => {
+                                    field.handleChange(val);
+                                 }}
+                                 blurHandler={field.handleBlur}
+                              />
+                           </div>
                         );
                      }}
                   </form.Field>
@@ -265,8 +278,8 @@ const NewCompetitionPage = () => {
                   {([canSubmit, isSubmitting, isPristine]) => (
                      <ActionButton
                         className="rounded-lg text-lg h-12 w-[200px]"
-                        action={() => form.handleSubmit()}
-                        disabled={!canSubmit || isPristine}
+                        action={submitForm}
+                        disabled={!canSubmit || isPristine || isSubmitting}
                         aria-disabled={!canSubmit || isPristine}
                      >
                         {isSubmitting ? (
