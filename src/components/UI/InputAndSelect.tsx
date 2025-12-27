@@ -16,30 +16,22 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Grip, Trash2 } from "lucide-react";
 import { FieldLabel } from "./lib-components/field";
 import { cn } from "@/lib/utils";
+import { useFieldContext } from "../admin/screens/new-competition/NewCompetitionPage";
 
 interface IProps {
-   changeHandler: (value: string) => void;
-   blurHandler: () => void;
-   unselectHandler?: (value: string) => void;
    isMulti?: boolean;
-   isValid?: boolean;
    source: string;
    label?: string;
-   message?: string;
    queryKey?: string;
 }
 
 const InputAndSelect = ({
-   changeHandler,
-   unselectHandler,
    isMulti = true,
-   isValid,
    source,
    label,
-   message,
    queryKey,
-   blurHandler,
 }: IProps) => {
+   const field = useFieldContext<string | string[]>();
    const commandRef = useRef<HTMLDivElement>(null);
    const [value, setValue] = useState("");
    const debouncedValue = useDebounce(value);
@@ -52,8 +44,8 @@ const InputAndSelect = ({
          const data = await fetch(
             `${source}?q=${encodeURIComponent(debouncedValue)}`
          );
-         const categories = await data.json();
-         return categories;
+         const result = await data.json();
+         return result;
       },
       enabled: !!open && !!source && !!queryKey,
    });
@@ -62,11 +54,34 @@ const InputAndSelect = ({
       item => !selectedValues.includes(item.title)
    );
 
+   const isValid = field.state.meta.isValid || !field.state.meta.isTouched;
+
+   const changeHandler = (value: string) => {
+      if (Array.isArray(field.state.value)) {
+         field.pushValue(value);
+      } else {
+         field.handleChange(value);
+      }
+   };
+
+   const blurHandler = () => {
+      field.handleBlur();
+   };
+
    const closeHandler = () => {
       if (open) {
          setOpen(false);
          setHoverIndex(0);
          blurHandler();
+      }
+   };
+
+   const unselectHandler = (val: string) => {
+      if (Array.isArray(field.state.value)) {
+         const index = field.state.value.findIndex(item => item === val);
+         if (index !== -1) {
+            field.removeValue(index);
+         }
       }
    };
 
@@ -85,7 +100,7 @@ const InputAndSelect = ({
          !e.relatedTarget ||
          (commandEl && !commandEl.contains(e.relatedTarget))
       ) {
-         blurHandler();
+         closeHandler();
       }
    };
 
@@ -197,9 +212,9 @@ const InputAndSelect = ({
                </Command>
                {isMulti && <ActionButton size="lg" action={submitHandler} />}
             </div>
-            {!isValid && message && (
+            {!isValid && (
                <em role="alert" className="text-red-accent text-sm">
-                  {message}
+                  {field.state.meta.errors[0]?.message}
                </em>
             )}
             {isMulti && selectedValues.length > 0 && (

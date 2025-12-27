@@ -1,0 +1,30 @@
+@reference '../../../../app/globals.css';
+
+.table {
+   @apply w-full box-border border-separate border-spacing-0 rounded-xl shadow-border;
+}
+
+.header-item {
+   @apply border border-x-0 border-border-gray first:rounded-tl-xl first:border-l w-auto
+   last:border-r last:rounded-tr-xl pr-4 first:pl-8 last:pr-8 text-start h-10 cursor-pointer;
+   &._specified {
+      @apply text-center;
+   }
+}
+
+.data-row {
+   @apply last:[&>td:first-child]:rounded-bl-xl last:[&>td:last-child]:rounded-br-xl;
+}
+
+.data-item {
+   @apply border border-x-0 border-t-0 border-border-gray first:border-l
+   last:border-r pr-4 first:pl-8 last:pr-8 text-start;
+   &._specified {
+      @apply text-center;
+   }
+}
+
+.header-item,
+.data-item {
+   @apply py-4 overflow-hidden box-content w-auto;
+}

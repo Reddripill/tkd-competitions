@@ -1,6 +1,7 @@
 import React from "react";
 import MainBlock from "../../MainBlock";
 import AddingButton from "@/components/UI/buttons/AddingButton";
+import DisciplinesTable from "./DisciplinesTable";
 
 const DisciplinesPage = () => {
    return (
@@ -9,7 +10,7 @@ const DisciplinesPage = () => {
          subTitle="Создание, удаление и редактирование дисциплин"
          actions={<AddingButton link="/" />}
       >
-         <div>HomePage</div>
+         <DisciplinesTable />
       </MainBlock>
    );
 };

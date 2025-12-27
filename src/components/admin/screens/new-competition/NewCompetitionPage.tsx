@@ -2,19 +2,32 @@
 import React from "react";
 import MainBlock from "../../MainBlock";
 import { FieldGroup } from "@/components/UI/lib-components/field";
-import { useForm } from "@tanstack/react-form";
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import InputAndSelect from "@/components/UI/InputAndSelect";
-import ActionButton from "@/components/UI/buttons/ActionButton";
 import { Plus } from "lucide-react";
 import { API } from "@/constants/api";
 import { newCompetitionSchema } from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { Spinner } from "@/components/UI/lib-components/spinner";
-import { Toaster, toast } from "sonner";
+import { Toaster } from "sonner";
+import SubmitButton from "@/components/UI/buttons/SubmitButton";
+
+export const { fieldContext, formContext, useFieldContext, useFormContext } =
+   createFormHookContexts();
+
+const { useAppForm } = createFormHook({
+   fieldContext,
+   formContext,
+   fieldComponents: {
+      InputAndSelect,
+   },
+   formComponents: {
+      SubmitButton,
+   },
+});
 
 const NewCompetitionPage = () => {
-   const form = useForm({
+   const form = useAppForm({
       defaultValues: defaultCompetition,
       onSubmit: async ({ value }) => {
          await fetch(API.COMPETITIONS, {
@@ -33,15 +46,6 @@ const NewCompetitionPage = () => {
          onBlur: newCompetitionSchema,
       },
    });
-   const submitForm = async () => {
-      try {
-         await form.handleSubmit();
-         toast.success("Соревнование создано");
-      } catch (err) {
-         toast.error("Ошибка при создании формы");
-         console.log(err);
-      }
-   };
    return (
       <MainBlock title="Создание нового соревнования">
          <Toaster position="top-center" expand={true} richColors={true} />
@@ -54,29 +58,20 @@ const NewCompetitionPage = () => {
                className="w-full"
             >
                <FieldGroup className="flex flex-col gap-y-10">
-                  <form.Field name="tournamentTitle">
+                  <form.AppField name="tournamentTitle">
                      {field => {
                         return (
                            <div className="border p-8 rounded-lg border-border-gray shadow-border">
-                              <InputAndSelect
+                              <field.InputAndSelect
                                  isMulti={false}
                                  label="Название соревнования *"
-                                 isValid={
-                                    field.state.meta.isValid ||
-                                    !field.state.meta.isTouched
-                                 }
-                                 message={field.state.meta.errors[0]?.message}
                                  source={API.TOURNAMENTS}
                                  queryKey={QUERY_KEYS.TOURNAMENTS}
-                                 changeHandler={val => {
-                                    field.handleChange(val);
-                                 }}
-                                 blurHandler={field.handleBlur}
                               />
                            </div>
                         );
                      }}
-                  </form.Field>
+                  </form.AppField>
                   <form.Field name="arenas" mode="array">
                      {fieldArr => (
                         <div className="flex flex-col gap-y-10">
@@ -85,31 +80,19 @@ const NewCompetitionPage = () => {
                                  key={index}
                                  className="flex flex-col gap-y-8 py-8 rounded-lg border-border-gray shadow-border"
                               >
-                                 <form.Field
+                                 <form.AppField
                                     name={`arenas[${index}].arenaTitle`}
                                  >
-                                    {arenaField => (
+                                    {field => (
                                        <div className="px-8 pb-8 border-b border-border">
-                                          <InputAndSelect
+                                          <field.InputAndSelect
                                              isMulti={false}
                                              label="Название арены *"
-                                             isValid={
-                                                arenaField.state.meta.isValid ||
-                                                !arenaField.state.meta.isTouched
-                                             }
-                                             message={
-                                                arenaField.state.meta.errors[0]
-                                                   ?.message
-                                             }
                                              source={API.CATEGORIES}
-                                             changeHandler={val => {
-                                                arenaField.handleChange(val);
-                                             }}
-                                             blurHandler={arenaField.handleBlur}
                                           />
                                        </div>
                                     )}
-                                 </form.Field>
+                                 </form.AppField>
                                  <form.Field
                                     name={`arenas[${index}].info`}
                                     mode="array"
@@ -123,11 +106,11 @@ const NewCompetitionPage = () => {
                                                       className="flex flex-col gap-y-6 px-8 pt-8 pb-8 first:pt-0 last:pb-0 last:border-none border-b border-border"
                                                       key={subIndex}
                                                    >
-                                                      <form.Field
+                                                      <form.AppField
                                                          name={`arenas[${index}].info[${subIndex}].discipline`}
                                                       >
                                                          {disciplineField => (
-                                                            <InputAndSelect
+                                                            <disciplineField.InputAndSelect
                                                                source={
                                                                   API.DISCIPLINES
                                                                }
@@ -136,28 +119,9 @@ const NewCompetitionPage = () => {
                                                                }
                                                                label="Название дисциплины"
                                                                isMulti={false}
-                                                               isValid={
-                                                                  disciplineField
-                                                                     .state.meta
-                                                                     .isValid
-                                                               }
-                                                               message={
-                                                                  disciplineField
-                                                                     .state.meta
-                                                                     .errors[0]
-                                                                     ?.message
-                                                               }
-                                                               changeHandler={val => {
-                                                                  disciplineField.handleChange(
-                                                                     val
-                                                                  );
-                                                               }}
-                                                               blurHandler={
-                                                                  disciplineField.handleBlur
-                                                               }
                                                             />
                                                          )}
-                                                      </form.Field>
+                                                      </form.AppField>
                                                       <form.Subscribe
                                                          selector={state =>
                                                             state.values.arenas[
@@ -167,12 +131,12 @@ const NewCompetitionPage = () => {
                                                          }
                                                       >
                                                          {() => (
-                                                            <form.Field
+                                                            <form.AppField
                                                                name={`arenas[${index}].info[${subIndex}].categories`}
                                                                mode="array"
                                                             >
                                                                {categoriesField => (
-                                                                  <InputAndSelect
+                                                                  <categoriesField.InputAndSelect
                                                                      source={
                                                                         API.CATEGORIES
                                                                      }
@@ -180,46 +144,9 @@ const NewCompetitionPage = () => {
                                                                         QUERY_KEYS.CATEGORIES
                                                                      }
                                                                      label="Название категорий"
-                                                                     isValid={
-                                                                        categoriesField
-                                                                           .state
-                                                                           .meta
-                                                                           .isValid
-                                                                     }
-                                                                     message={
-                                                                        categoriesField
-                                                                           .state
-                                                                           .meta
-                                                                           .errors[0]
-                                                                           ?.message
-                                                                     }
-                                                                     changeHandler={val => {
-                                                                        categoriesField.pushValue(
-                                                                           val
-                                                                        );
-                                                                     }}
-                                                                     blurHandler={
-                                                                        categoriesField.handleBlur
-                                                                     }
-                                                                     unselectHandler={val => {
-                                                                        const index =
-                                                                           categoriesField.state.value.findIndex(
-                                                                              item =>
-                                                                                 item ===
-                                                                                 val
-                                                                           );
-                                                                        if (
-                                                                           index !==
-                                                                           -1
-                                                                        ) {
-                                                                           categoriesField.removeValue(
-                                                                              index
-                                                                           );
-                                                                        }
-                                                                     }}
                                                                   />
                                                                )}
-                                                            </form.Field>
+                                                            </form.AppField>
                                                          )}
                                                       </form.Subscribe>
                                                    </div>
@@ -268,31 +195,9 @@ const NewCompetitionPage = () => {
                </FieldGroup>
             </form>
             <div>
-               <form.Subscribe
-                  selector={state => [
-                     state.canSubmit,
-                     state.isSubmitting,
-                     state.isPristine,
-                  ]}
-               >
-                  {([canSubmit, isSubmitting, isPristine]) => (
-                     <ActionButton
-                        className="rounded-lg text-lg h-12 w-[200px]"
-                        action={submitForm}
-                        disabled={!canSubmit || isPristine || isSubmitting}
-                        aria-disabled={!canSubmit || isPristine}
-                     >
-                        {isSubmitting ? (
-                           <div className="flex items-center gap-x-2">
-                              <Spinner />
-                              <div>Сохранение</div>
-                           </div>
-                        ) : (
-                           "Сохранить"
-                        )}
-                     </ActionButton>
-                  )}
-               </form.Subscribe>
+               <form.AppForm>
+                  <form.SubmitButton />
+               </form.AppForm>
             </div>
          </div>
       </MainBlock>
