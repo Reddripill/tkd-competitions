@@ -20,6 +20,7 @@ import { Pen, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DisciplinesTableActions from "./DisciplinesTableActions";
 import DisciplineFooter from "./DisciplineFooter";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -30,7 +31,7 @@ const columns = [
          <div className="flex items-center justify-center">
             <Checkbox
                checked={table.getIsAllRowsSelected()}
-               onClick={table.getToggleAllRowsSelectedHandler()}
+               onClick={table.getToggleAllPageRowsSelectedHandler()}
             />
          </div>
       ),
@@ -79,6 +80,8 @@ const columns = [
 
 const DisciplinesTable = () => {
    const [rowSelection, setRowSelection] = useState({});
+   const [inputValue, setInputValue] = useState("");
+   const debouncedValue = useDebounce(inputValue);
    const [pagination, setPagination] = useState({
       pageIndex: 0,
       pageSize: 8,
@@ -88,12 +91,12 @@ const DisciplinesTable = () => {
       isError,
       isFetching,
    } = useQuery<IBaseEntityWithTitleAndCount>({
-      queryKey: [QUERY_KEYS.DISCIPLINES, pagination],
+      queryKey: [QUERY_KEYS.DISCIPLINES, pagination, debouncedValue],
       queryFn: async () => {
          const data = await fetch(
-            `${API.DISCIPLINES}?limit=${pagination.pageSize}&skip=${
-               pagination.pageIndex * pagination.pageSize
-            }`
+            `${API.DISCIPLINES}?q=${encodeURIComponent(debouncedValue)}&limit=${
+               pagination.pageSize
+            }&skip=${pagination.pageIndex * pagination.pageSize}`
          );
          const result = await data.json();
          return result;
@@ -115,12 +118,20 @@ const DisciplinesTable = () => {
       onRowSelectionChange: setRowSelection,
       manualPagination: true,
       autoResetPageIndex: false,
+      getRowId: row => {
+         return row.id;
+      },
       onPaginationChange: setPagination,
    });
 
    return (
       <div>
-         <DisciplinesTableActions />
+         <DisciplinesTableActions
+            value={inputValue}
+            setValue={setInputValue}
+            selectedIds={Object.keys(rowSelection)}
+            source={API.DISCIPLINES}
+         />
          <table className={styles.table}>
             <thead>
                {table.getHeaderGroups().map(headerGroup => (
@@ -183,7 +194,7 @@ const DisciplinesTable = () => {
          </table>
          <DisciplineFooter
             allRowsCount={response?.count ?? 0}
-            rowSelectedCount={table.getSelectedRowModel().rows.length}
+            rowSelectedCount={Object.keys(rowSelection).length}
             nextClickHandler={() => table.nextPage()}
             prevClickHandler={() => table.previousPage()}
             isNextDisabled={!table.getCanNextPage()}

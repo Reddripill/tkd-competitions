@@ -14,8 +14,8 @@ const DisciplineFooter = ({
    ...pagination
 }: IProps) => {
    return (
-      <div className="flex items-center justify-between">
-         <div className="text-lg">
+      <div className="flex justify-between items-center">
+         <div className="text-md">
             Выбрано {rowSelectedCount} из {allRowsCount}
          </div>
          <div>

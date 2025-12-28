@@ -1,3 +1,5 @@
+export type SetStateType<T> = React.Dispatch<React.SetStateAction<T>>;
+
 export interface IBaseEntity {
    id: string;
    createdAt: Date;
@@ -11,4 +13,8 @@ export interface IBaseEntityWithTitle extends IBaseEntity {
 export interface IBaseEntityWithTitleAndCount {
    data: IBaseEntityWithTitle[];
    count: number;
+}
+
+export interface IDeleteMany {
+   ids: string[];
 }
