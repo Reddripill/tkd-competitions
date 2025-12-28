@@ -1,13 +1,4 @@
 import React from "react";
-import {
-   Pagination,
-   PaginationContent,
-   PaginationEllipsis,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "../lib-components/pagination";
 import { ChevronLeft, ChevronRight, EllipsisIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
