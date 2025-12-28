@@ -1,19 +1,26 @@
 @reference '../../../../app/globals.css';
 
 .table {
-   @apply w-full box-border border-separate border-spacing-0 rounded-xl shadow-border;
+   @apply w-full box-border border-separate border-spacing-0 rounded-xl shadow-border mb-6;
+}
+
+.header-row {
+   @apply h-14;
 }
 
 .header-item {
    @apply border border-x-0 border-border-gray first:rounded-tl-xl first:border-l w-auto
-   last:border-r last:rounded-tr-xl pr-4 first:pl-8 last:pr-8 text-start h-10 cursor-pointer;
+   last:border-r last:rounded-tr-xl pr-4 first:pl-8 last:pr-8 text-start cursor-pointer;
    &._specified {
       @apply text-center;
    }
 }
 
 .data-row {
-   @apply last:[&>td:first-child]:rounded-bl-xl last:[&>td:last-child]:rounded-br-xl;
+   @apply h-14 last:[&>td:first-child]:rounded-bl-xl last:[&>td:last-child]:rounded-br-xl;
+   &._selected {
+      @apply bg-blue-accent/10;
+   }
 }
 
 .data-item {
@@ -26,5 +33,5 @@
 
 .header-item,
 .data-item {
-   @apply py-4 overflow-hidden box-content w-auto;
+   @apply overflow-hidden box-content w-auto;
 }

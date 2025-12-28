@@ -10,19 +10,26 @@ import {
 import ActionButton from "./buttons/ActionButton";
 import useOutside from "@/hooks/useOutside";
 import { useQuery } from "@tanstack/react-query";
-import { IBaseEntityWithTitle } from "@/types/main.types";
+import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 import { Spinner } from "./lib-components/spinner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Grip, Trash2 } from "lucide-react";
 import { FieldLabel } from "./lib-components/field";
 import { cn } from "@/lib/utils";
-import { useFieldContext } from "../admin/screens/new-competition/NewCompetitionPage";
 
-interface IProps {
+export interface ISelectProps {
    isMulti?: boolean;
    source: string;
    label?: string;
    queryKey?: string;
+   validation?: boolean;
+   suggestion?: boolean;
+   isValid?: boolean;
+   blurHandler?: () => void;
+   changeHandler?: (val: string) => void;
+   unselectHandler?: (val: string) => void;
+   errorMessage?: string;
+   placeholder?: string;
 }
 
 const InputAndSelect = ({
@@ -30,15 +37,26 @@ const InputAndSelect = ({
    source,
    label,
    queryKey,
-}: IProps) => {
-   const field = useFieldContext<string | string[]>();
+   validation = true,
+   isValid = true,
+   blurHandler,
+   changeHandler,
+   unselectHandler,
+   errorMessage,
+   suggestion = true,
+   placeholder,
+}: ISelectProps) => {
    const commandRef = useRef<HTMLDivElement>(null);
    const [value, setValue] = useState("");
    const debouncedValue = useDebounce(value);
    const [open, setOpen] = useState(false);
    const [selectedValues, setSelectedValues] = useState<string[]>([]);
    const [hoverIndex, setHoverIndex] = useState<number>(0);
-   const { data, isError, isFetching } = useQuery<IBaseEntityWithTitle[]>({
+   const {
+      data: response,
+      isError,
+      isFetching,
+   } = useQuery<IBaseEntityWithTitleAndCount>({
       queryKey: [queryKey, debouncedValue],
       queryFn: async () => {
          const data = await fetch(
@@ -50,37 +68,16 @@ const InputAndSelect = ({
       enabled: !!open && !!source && !!queryKey,
    });
 
-   const suggestedItems = data?.filter(
+   const suggestedItems = response?.data.filter(
       item => !selectedValues.includes(item.title)
    );
-
-   const isValid = field.state.meta.isValid || !field.state.meta.isTouched;
-
-   const changeHandler = (value: string) => {
-      if (Array.isArray(field.state.value)) {
-         field.pushValue(value);
-      } else {
-         field.handleChange(value);
-      }
-   };
-
-   const blurHandler = () => {
-      field.handleBlur();
-   };
 
    const closeHandler = () => {
       if (open) {
          setOpen(false);
          setHoverIndex(0);
-         blurHandler();
-      }
-   };
-
-   const unselectHandler = (val: string) => {
-      if (Array.isArray(field.state.value)) {
-         const index = field.state.value.findIndex(item => item === val);
-         if (index !== -1) {
-            field.removeValue(index);
+         if (blurHandler) {
+            blurHandler();
          }
       }
    };
@@ -89,7 +86,7 @@ const InputAndSelect = ({
 
    const onChangeHandler = (val: string) => {
       setValue(val);
-      if (!isMulti) {
+      if (!isMulti && changeHandler) {
          changeHandler(val);
       }
    };
@@ -107,12 +104,16 @@ const InputAndSelect = ({
    const chooseHandler = (value: string) => {
       onChangeHandler(value);
       closeHandler();
-      blurHandler();
+      if (blurHandler) {
+         blurHandler();
+      }
    };
 
    const submitHandler = () => {
       if (value.length >= 3) {
-         changeHandler(value);
+         if (changeHandler) {
+            changeHandler(value);
+         }
          setValue("");
          setSelectedValues(prev => [...prev, value]);
       }
@@ -143,7 +144,7 @@ const InputAndSelect = ({
          {label && (
             <FieldLabel
                className={cn("mb-3", {
-                  "text-red-accent": !isValid,
+                  "text-red-accent": !isValid && validation && errorMessage,
                })}
             >
                {label}
@@ -169,12 +170,13 @@ const InputAndSelect = ({
                      onFocus={() => {
                         setOpen(true);
                      }}
+                     placeholder={placeholder}
                      className={cn({
                         "border-red-accent text-red-accent focus-within:border-red-accent focus-within:ring-red-accent/80":
                            !isValid,
                      })}
                   />
-                  {!isError && open && (
+                  {!isError && open && suggestion && (
                      <CommandList className="absolute top-[calc(100%+6px)] left-0 z-10 w-full h-auto bg-white rounded-lg shadow-main">
                         {isFetching ? (
                            <div className="py-4 flex justify-center">
@@ -212,9 +214,9 @@ const InputAndSelect = ({
                </Command>
                {isMulti && <ActionButton size="lg" action={submitHandler} />}
             </div>
-            {!isValid && (
+            {!isValid && validation && errorMessage && (
                <em role="alert" className="text-red-accent text-sm">
-                  {field.state.meta.errors[0]?.message}
+                  {errorMessage}
                </em>
             )}
             {isMulti && selectedValues.length > 0 && (

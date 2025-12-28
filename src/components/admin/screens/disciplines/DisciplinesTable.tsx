@@ -1,12 +1,15 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
    createColumnHelper,
    flexRender,
    getCoreRowModel,
    useReactTable,
 } from "@tanstack/react-table";
-import { IBaseEntityWithTitle } from "@/types/main.types";
+import {
+   IBaseEntityWithTitle,
+   IBaseEntityWithTitleAndCount,
+} from "@/types/main.types";
 import { useQuery } from "@tanstack/react-query";
 import { API } from "@/constants/api";
 import { QUERY_KEYS } from "@/constants/queryKeys";
@@ -16,20 +19,27 @@ import { Checkbox } from "@/components/UI/lib-components/checkbox";
 import { Pen, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DisciplinesTableActions from "./DisciplinesTableActions";
+import DisciplineFooter from "./DisciplineFooter";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
 const columns = [
    columnHelper.display({
       id: "actions",
-      cell: () => (
+      header: ({ table }) => (
          <div className="flex items-center justify-center">
-            <Checkbox />
+            <Checkbox
+               checked={table.getIsAllRowsSelected()}
+               onClick={table.getToggleAllRowsSelectedHandler()}
+            />
          </div>
       ),
-      header: () => (
+      cell: ({ row }) => (
          <div className="flex items-center justify-center">
-            <Checkbox />
+            <Checkbox
+               checked={row.getIsSelected()}
+               onClick={row.getToggleSelectedHandler()}
+            />
          </div>
       ),
       size: 20,
@@ -37,7 +47,10 @@ const columns = [
    columnHelper.display({
       id: "rowNumber",
       header: "№",
-      cell: ({ row }) => row.index + 1,
+      cell: ({ row, table }) => {
+         const { pageIndex, pageSize } = table.getState().pagination;
+         return pageIndex * pageSize + row.index + 1;
+      },
       size: 60,
    }),
    columnHelper.accessor("title", {
@@ -65,19 +78,46 @@ const columns = [
 ];
 
 const DisciplinesTable = () => {
-   const { data, isError, isFetching } = useQuery<IBaseEntityWithTitle[]>({
-      queryKey: [QUERY_KEYS.DISCIPLINES],
+   const [rowSelection, setRowSelection] = useState({});
+   const [pagination, setPagination] = useState({
+      pageIndex: 0,
+      pageSize: 8,
+   });
+   const {
+      data: response,
+      isError,
+      isFetching,
+   } = useQuery<IBaseEntityWithTitleAndCount>({
+      queryKey: [QUERY_KEYS.DISCIPLINES, pagination],
       queryFn: async () => {
-         const data = await fetch(`${API.DISCIPLINES}`);
+         const data = await fetch(
+            `${API.DISCIPLINES}?limit=${pagination.pageSize}&skip=${
+               pagination.pageIndex * pagination.pageSize
+            }`
+         );
          const result = await data.json();
          return result;
       },
    });
+
+   const pageCount = Math.ceil((response?.count ?? 0) / pagination.pageSize);
+
    const table = useReactTable({
       columns,
-      data: data ?? [],
+      data: response?.data ?? [],
       getCoreRowModel: getCoreRowModel(),
+      state: {
+         rowSelection,
+         pagination,
+      },
+      enableRowSelection: true,
+      pageCount,
+      onRowSelectionChange: setRowSelection,
+      manualPagination: true,
+      autoResetPageIndex: false,
+      onPaginationChange: setPagination,
    });
+
    return (
       <div>
          <DisciplinesTableActions />
@@ -85,35 +125,37 @@ const DisciplinesTable = () => {
             <thead>
                {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id} className={styles["header-row"]}>
-                     {headerGroup.headers.map(header => {
-                        console.log(header.getSize());
-                        return (
-                           <th
-                              key={header.id}
-                              className={cn(styles["header-item"], {
-                                 [styles._specified]: header.getSize() !== 150,
-                              })}
-                              style={{
-                                 width: `${
-                                    header.getSize() !== 150
-                                       ? header.getSize() + "px"
-                                       : ""
-                                 }`,
-                              }}
-                           >
-                              {flexRender(
-                                 header.column.columnDef.header,
-                                 header.getContext()
-                              )}
-                           </th>
-                        );
-                     })}
+                     {headerGroup.headers.map(header => (
+                        <th
+                           key={header.id}
+                           className={cn(styles["header-item"], {
+                              [styles._specified]: header.getSize() !== 150,
+                           })}
+                           style={{
+                              width: `${
+                                 header.getSize() !== 150
+                                    ? header.getSize() + "px"
+                                    : ""
+                              }`,
+                           }}
+                        >
+                           {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                           )}
+                        </th>
+                     ))}
                   </tr>
                ))}
             </thead>
             <tbody>
                {table.getRowModel().rows.map(row => (
-                  <tr key={row.id} className={styles["data-row"]}>
+                  <tr
+                     key={row.id}
+                     className={cn(styles["data-row"], {
+                        [styles._selected]: row.getIsSelected(),
+                     })}
+                  >
                      {row.getVisibleCells().map(cell => (
                         <td
                            key={cell.id}
@@ -139,6 +181,17 @@ const DisciplinesTable = () => {
                ))}
             </tbody>
          </table>
+         <DisciplineFooter
+            allRowsCount={response?.count ?? 0}
+            rowSelectedCount={table.getSelectedRowModel().rows.length}
+            nextClickHandler={() => table.nextPage()}
+            prevClickHandler={() => table.previousPage()}
+            isNextDisabled={!table.getCanNextPage()}
+            isPrevDisabled={!table.getCanPreviousPage()}
+            pageCount={pageCount}
+            clickHandler={table.setPageIndex}
+            pageIndex={pagination.pageIndex}
+         />
       </div>
    );
 };

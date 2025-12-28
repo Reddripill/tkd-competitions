@@ -3,14 +3,14 @@ import React from "react";
 import MainBlock from "../../MainBlock";
 import { FieldGroup } from "@/components/UI/lib-components/field";
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
-import InputAndSelect from "@/components/UI/InputAndSelect";
 import { Plus } from "lucide-react";
 import { API } from "@/constants/api";
 import { newCompetitionSchema } from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { Toaster } from "sonner";
-import SubmitButton from "@/components/UI/buttons/SubmitButton";
+import SubmitButton from "@/components/UI/form/SubmitButton";
+import SelectField from "@/components/UI/form/SelectField";
 
 export const { fieldContext, formContext, useFieldContext, useFormContext } =
    createFormHookContexts();
@@ -19,7 +19,7 @@ const { useAppForm } = createFormHook({
    fieldContext,
    formContext,
    fieldComponents: {
-      InputAndSelect,
+      SelectField,
    },
    formComponents: {
       SubmitButton,
@@ -62,7 +62,7 @@ const NewCompetitionPage = () => {
                      {field => {
                         return (
                            <div className="border p-8 rounded-lg border-border-gray shadow-border">
-                              <field.InputAndSelect
+                              <field.SelectField
                                  isMulti={false}
                                  label="Название соревнования *"
                                  source={API.TOURNAMENTS}
@@ -85,7 +85,7 @@ const NewCompetitionPage = () => {
                                  >
                                     {field => (
                                        <div className="px-8 pb-8 border-b border-border">
-                                          <field.InputAndSelect
+                                          <field.SelectField
                                              isMulti={false}
                                              label="Название арены *"
                                              source={API.CATEGORIES}
@@ -110,7 +110,7 @@ const NewCompetitionPage = () => {
                                                          name={`arenas[${index}].info[${subIndex}].discipline`}
                                                       >
                                                          {disciplineField => (
-                                                            <disciplineField.InputAndSelect
+                                                            <disciplineField.SelectField
                                                                source={
                                                                   API.DISCIPLINES
                                                                }
@@ -136,7 +136,7 @@ const NewCompetitionPage = () => {
                                                                mode="array"
                                                             >
                                                                {categoriesField => (
-                                                                  <categoriesField.InputAndSelect
+                                                                  <categoriesField.SelectField
                                                                      source={
                                                                         API.CATEGORIES
                                                                      }
