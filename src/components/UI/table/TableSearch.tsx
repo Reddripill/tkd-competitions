@@ -1,10 +1,9 @@
 import React from "react";
 import { Command, CommandInput } from "../lib-components/command";
-import { SetStateType } from "@/types/main.types";
 
 interface IProps {
    value: string;
-   setValue: SetStateType<string>;
+   setValue: (val: string) => void;
    placeholder?: string;
 }
 

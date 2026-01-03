@@ -4,23 +4,27 @@ import {
    createColumnHelper,
    flexRender,
    getCoreRowModel,
+   type SortingState,
    useReactTable,
 } from "@tanstack/react-table";
 import {
    IBaseEntityWithTitle,
    IBaseEntityWithTitleAndCount,
+   IDeleteOne,
 } from "@/types/main.types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { API } from "@/constants/api";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { dateFormatter } from "@/utils/date-formatter";
 import styles from "./DisciplineTable.module.css";
 import { Checkbox } from "@/components/UI/lib-components/checkbox";
-import { Pen, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, Pen, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DisciplinesTableActions from "./DisciplinesTableActions";
 import DisciplineFooter from "./DisciplineFooter";
 import { useDebounce } from "@/hooks/useDebounce";
+import { toast, Toaster } from "sonner";
+import { queryClient } from "@/providers/QueryProvider";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -61,10 +65,12 @@ const columns = [
    columnHelper.accessor("createdAt", {
       header: "Дата создания",
       cell: info => dateFormatter(info.getValue()),
+      size: 250,
    }),
    columnHelper.accessor("updatedAt", {
       header: "Дата изменения",
       cell: info => dateFormatter(info.getValue()),
+      size: 250,
    }),
    columnHelper.display({
       id: "update",
@@ -82,6 +88,12 @@ const DisciplinesTable = () => {
    const [rowSelection, setRowSelection] = useState({});
    const [inputValue, setInputValue] = useState("");
    const debouncedValue = useDebounce(inputValue);
+   const [sorting, setSorting] = useState<SortingState>([
+      {
+         id: "updatedAt",
+         desc: true,
+      },
+   ]);
    const [pagination, setPagination] = useState({
       pageIndex: 0,
       pageSize: 8,
@@ -91,44 +103,120 @@ const DisciplinesTable = () => {
       isError,
       isFetching,
    } = useQuery<IBaseEntityWithTitleAndCount>({
-      queryKey: [QUERY_KEYS.DISCIPLINES, pagination, debouncedValue],
+      queryKey: [QUERY_KEYS.DISCIPLINES, pagination, debouncedValue, sorting],
       queryFn: async () => {
-         const data = await fetch(
-            `${API.DISCIPLINES}?q=${encodeURIComponent(debouncedValue)}&limit=${
-               pagination.pageSize
-            }&skip=${pagination.pageIndex * pagination.pageSize}`
-         );
+         const order = sorting
+            .map(s => `${s.id}:${s.desc ? "DESC" : "ASC"}`)
+            .join(",");
+
+         const params = new URLSearchParams({
+            q: debouncedValue,
+            limit: String(pagination.pageSize),
+            skip: String(pagination.pageIndex * pagination.pageSize),
+            order,
+         });
+
+         const data = await fetch(`${API.DISCIPLINES}?${params.toString()}`);
          const result = await data.json();
          return result;
       },
    });
 
+   const mutation = useMutation({
+      mutationFn: async (body: IDeleteOne) => {
+         const res = await fetch(API.DISCIPLINES, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+         });
+
+         if (!res.ok) {
+            throw new Error("Ошибка удаления");
+         }
+
+         return res.json();
+      },
+
+      onSuccess: () => {
+         toast.success("Записи успешно удалены");
+         queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.DISCIPLINES],
+         });
+      },
+
+      onError: () => {
+         toast.error("Ошибка при удалении");
+      },
+   });
+
+   const deleteEntity = (id: string) => {
+      mutation.mutate({ id });
+   };
+
+   const tableSearchHandler = (val: string) => {
+      setPagination(prev => ({
+         ...prev,
+         pageIndex: 0,
+      }));
+      setRowSelection({});
+      setInputValue(val);
+   };
+
+   const sortingHandler = (id: string, isSorted: boolean) => {
+      if (isSorted) {
+         const sortingElement = sorting.find(item => item.id === id);
+         if (sortingElement) {
+            setSorting(prev =>
+               prev.map(item =>
+                  item.id === id ? { ...item, desc: !item.desc } : item
+               )
+            );
+         } else {
+            setSorting([
+               {
+                  id,
+                  desc: true,
+               },
+            ]);
+         }
+      }
+   };
+
+   const checkIsSorted = (id: string) => {
+      return sorting.some(item => item.id === id);
+   };
+
    const pageCount = Math.ceil((response?.count ?? 0) / pagination.pageSize);
 
-   const table = useReactTable({
+   const table = useReactTable<IBaseEntityWithTitle>({
       columns,
       data: response?.data ?? [],
       getCoreRowModel: getCoreRowModel(),
       state: {
          rowSelection,
          pagination,
+         sorting,
       },
       enableRowSelection: true,
       pageCount,
-      onRowSelectionChange: setRowSelection,
       manualPagination: true,
+      manualSorting: true,
       autoResetPageIndex: false,
       getRowId: row => {
          return row.id;
       },
+      onRowSelectionChange: setRowSelection,
       onPaginationChange: setPagination,
+      onSortingChange: setSorting,
    });
-
    return (
       <div>
+         <Toaster position="top-center" expand={true} richColors={true} />
          <DisciplinesTableActions
             value={inputValue}
-            setValue={setInputValue}
+            setValue={tableSearchHandler}
             selectedIds={Object.keys(rowSelection)}
             source={API.DISCIPLINES}
          />
@@ -150,10 +238,32 @@ const DisciplinesTable = () => {
                               }`,
                            }}
                         >
-                           {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                           )}
+                           <div
+                              className={styles["header-cell"]}
+                              onClick={() =>
+                                 sortingHandler(
+                                    header.id,
+                                    header.column.getCanSort()
+                                 )
+                              }
+                           >
+                              <div>
+                                 {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                 )}
+                              </div>
+                              {checkIsSorted(header.id) && (
+                                 <div className="absolute -right-6 top-1/2 -translate-y-1/2">
+                                    {sorting.find(item => item.id === header.id)
+                                       ?.desc ? (
+                                       <ArrowDown size={18} />
+                                    ) : (
+                                       <ArrowUp size={18} />
+                                    )}
+                                 </div>
+                              )}
+                           </div>
                         </th>
                      ))}
                   </tr>

@@ -1,11 +1,10 @@
 import React from "react";
 import DropDown from "@/components/UI/table/DropDown";
-import { SetStateType } from "@/types/main.types";
 import TableSearch from "@/components/UI/table/TableSearch";
 
 interface IProps {
    value: string;
-   setValue: SetStateType<string>;
+   setValue: (val: string) => void;
    selectedIds?: string[];
    source: string;
 }
