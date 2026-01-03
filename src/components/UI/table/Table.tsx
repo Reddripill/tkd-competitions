@@ -14,17 +14,16 @@ import {
 } from "@/types/main.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { API } from "@/constants/api";
-import { QUERY_KEYS } from "@/constants/queryKeys";
 import { dateFormatter } from "@/utils/date-formatter";
-import styles from "./DisciplineTable.module.css";
 import { Checkbox } from "@/components/UI/lib-components/checkbox";
 import { ArrowDown, ArrowUp, Pen, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
-import DisciplinesTableActions from "./DisciplinesTableActions";
-import DisciplineFooter from "./DisciplineFooter";
+import TableFooter from "./TableFooter";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast, Toaster } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
+import styles from "./Table.module.css";
+import TableActions from "./TableActions";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -84,7 +83,12 @@ const columns = [
    }),
 ];
 
-const DisciplinesTable = () => {
+interface IProps {
+   source: string;
+   queryKey: string;
+}
+
+const Table = ({ queryKey, source }: IProps) => {
    const [rowSelection, setRowSelection] = useState({});
    const [inputValue, setInputValue] = useState("");
    const debouncedValue = useDebounce(inputValue);
@@ -103,7 +107,7 @@ const DisciplinesTable = () => {
       isError,
       isFetching,
    } = useQuery<IBaseEntityWithTitleAndCount>({
-      queryKey: [QUERY_KEYS.DISCIPLINES, pagination, debouncedValue, sorting],
+      queryKey: [queryKey, pagination, debouncedValue, sorting],
       queryFn: async () => {
          const order = sorting
             .map(s => `${s.id}:${s.desc ? "DESC" : "ASC"}`)
@@ -116,7 +120,7 @@ const DisciplinesTable = () => {
             order,
          });
 
-         const data = await fetch(`${API.DISCIPLINES}?${params.toString()}`);
+         const data = await fetch(`${source}?${params.toString()}`);
          const result = await data.json();
          return result;
       },
@@ -124,7 +128,7 @@ const DisciplinesTable = () => {
 
    const mutation = useMutation({
       mutationFn: async (body: IDeleteOne) => {
-         const res = await fetch(API.DISCIPLINES, {
+         const res = await fetch(source, {
             method: "DELETE",
             headers: {
                "Content-Type": "application/json",
@@ -142,7 +146,7 @@ const DisciplinesTable = () => {
       onSuccess: () => {
          toast.success("Записи успешно удалены");
          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.DISCIPLINES],
+            queryKey: [queryKey],
          });
       },
 
@@ -214,11 +218,11 @@ const DisciplinesTable = () => {
    return (
       <div>
          <Toaster position="top-center" expand={true} richColors={true} />
-         <DisciplinesTableActions
+         <TableActions
             value={inputValue}
             setValue={tableSearchHandler}
             selectedIds={Object.keys(rowSelection)}
-            source={API.DISCIPLINES}
+            source={source}
          />
          <table className={styles.table}>
             <thead>
@@ -302,7 +306,7 @@ const DisciplinesTable = () => {
                ))}
             </tbody>
          </table>
-         <DisciplineFooter
+         <TableFooter
             allRowsCount={response?.count ?? 0}
             rowSelectedCount={Object.keys(rowSelection).length}
             nextClickHandler={() => table.nextPage()}
@@ -317,4 +321,4 @@ const DisciplinesTable = () => {
    );
 };
 
-export default DisciplinesTable;
+export default Table;

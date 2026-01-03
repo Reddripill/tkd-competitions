@@ -8,7 +8,7 @@ interface IProps extends IPaginationProps {
    allRowsCount: number;
 }
 
-const DisciplineFooter = ({
+const TableFooter = ({
    allRowsCount,
    rowSelectedCount,
    ...pagination
@@ -25,4 +25,4 @@ const DisciplineFooter = ({
    );
 };
 
-export default DisciplineFooter;
+export default TableFooter;

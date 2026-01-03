@@ -9,12 +9,7 @@ interface IProps {
    source: string;
 }
 
-const DisciplinesTableActions = ({
-   value,
-   setValue,
-   selectedIds,
-   source,
-}: IProps) => {
+const TableActions = ({ value, setValue, selectedIds, source }: IProps) => {
    return (
       <div className="flex items-center justify-between mb-8">
          <div className="basis-xs">
@@ -37,4 +32,4 @@ const DisciplinesTableActions = ({
    );
 };
 
-export default DisciplinesTableActions;
+export default TableActions;
