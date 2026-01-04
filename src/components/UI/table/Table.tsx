@@ -1,22 +1,18 @@
 "use client";
 import React, { useState } from "react";
 import {
+   type SortingState,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
-   type SortingState,
    useReactTable,
 } from "@tanstack/react-table";
 import {
    IBaseEntityWithTitle,
    IBaseEntityWithTitleAndCount,
-   IDeleteOne,
 } from "@/types/main.types";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { API } from "@/constants/api";
-import { dateFormatter } from "@/utils/date-formatter";
-import { Checkbox } from "@/components/UI/lib-components/checkbox";
-import { ArrowDown, ArrowUp, Pen, Trash } from "lucide-react";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableFooter from "./TableFooter";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -24,10 +20,14 @@ import { toast, Toaster } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
 import styles from "./Table.module.css";
 import TableActions from "./TableActions";
+import { Checkbox } from "../lib-components/checkbox";
+import { dateFormatter } from "@/utils/date-formatter";
+import { Pen, Trash } from "lucide-react";
+import TableSkeleton from "./TableSkeleton";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
-const columns = [
+export const columns = [
    columnHelper.display({
       id: "actions",
       header: ({ table }) => (
@@ -61,13 +61,13 @@ const columns = [
       header: "Название",
       cell: info => info.getValue(),
    }),
-   columnHelper.accessor("createdAt", {
-      header: "Дата создания",
+   columnHelper.accessor("updatedAt", {
+      header: "Дата изменения",
       cell: info => dateFormatter(info.getValue()),
       size: 250,
    }),
-   columnHelper.accessor("updatedAt", {
-      header: "Дата изменения",
+   columnHelper.accessor("createdAt", {
+      header: "Дата создания",
       cell: info => dateFormatter(info.getValue()),
       size: 250,
    }),
@@ -78,7 +78,14 @@ const columns = [
    }),
    columnHelper.display({
       id: "delete",
-      cell: () => <Trash className="size-5 text-black cursor-pointer" />,
+      cell: ({ table, row }) => (
+         <Trash
+            onClick={() => {
+               table.options.meta?.onDelete(row.id);
+            }}
+            className="size-5 text-black cursor-pointer"
+         />
+      ),
       size: 30,
    }),
 ];
@@ -104,10 +111,13 @@ const Table = ({ queryKey, source }: IProps) => {
    });
    const {
       data: response,
+      isSuccess,
+      isPending,
       isError,
-      isFetching,
+      isPlaceholderData,
    } = useQuery<IBaseEntityWithTitleAndCount>({
       queryKey: [queryKey, pagination, debouncedValue, sorting],
+      placeholderData: keepPreviousData,
       queryFn: async () => {
          const order = sorting
             .map(s => `${s.id}:${s.desc ? "DESC" : "ASC"}`)
@@ -127,13 +137,12 @@ const Table = ({ queryKey, source }: IProps) => {
    });
 
    const mutation = useMutation({
-      mutationFn: async (body: IDeleteOne) => {
-         const res = await fetch(source, {
+      mutationFn: async (id: string) => {
+         const res = await fetch(`${source}/${id}`, {
             method: "DELETE",
             headers: {
                "Content-Type": "application/json",
             },
-            body: JSON.stringify(body),
          });
 
          if (!res.ok) {
@@ -154,10 +163,6 @@ const Table = ({ queryKey, source }: IProps) => {
          toast.error("Ошибка при удалении");
       },
    });
-
-   const deleteEntity = (id: string) => {
-      mutation.mutate({ id });
-   };
 
    const tableSearchHandler = (val: string) => {
       setPagination(prev => ({
@@ -208,115 +213,142 @@ const Table = ({ queryKey, source }: IProps) => {
       manualPagination: true,
       manualSorting: true,
       autoResetPageIndex: false,
-      getRowId: row => {
-         return row.id;
-      },
       onRowSelectionChange: setRowSelection,
       onPaginationChange: setPagination,
       onSortingChange: setSorting,
+      getRowId: row => {
+         return row.id;
+      },
+      meta: {
+         onDelete: mutation.mutate,
+      },
    });
+
+   if (isError) {
+      return <div>Ошибка :(</div>;
+   }
    return (
       <div>
-         <Toaster position="top-center" expand={true} richColors={true} />
-         <TableActions
-            value={inputValue}
-            setValue={tableSearchHandler}
-            selectedIds={Object.keys(rowSelection)}
-            source={source}
-         />
-         <table className={styles.table}>
-            <thead>
-               {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className={styles["header-row"]}>
-                     {headerGroup.headers.map(header => (
-                        <th
-                           key={header.id}
-                           className={cn(styles["header-item"], {
-                              [styles._specified]: header.getSize() !== 150,
-                           })}
-                           style={{
-                              width: `${
-                                 header.getSize() !== 150
-                                    ? header.getSize() + "px"
-                                    : ""
-                              }`,
-                           }}
+         {isSuccess && response?.count === 0 ? (
+            <div>Записей еще нет</div>
+         ) : (
+            <div>
+               <Toaster position="top-center" expand={true} richColors={true} />
+               <TableActions
+                  value={inputValue}
+                  setValue={tableSearchHandler}
+                  selectedIds={Object.keys(rowSelection)}
+                  source={source}
+               />
+
+               <table className={styles.table}>
+                  <thead>
+                     {table.getHeaderGroups().map(headerGroup => (
+                        <tr
+                           key={headerGroup.id}
+                           className={styles["header-row"]}
                         >
-                           <div
-                              className={styles["header-cell"]}
-                              onClick={() =>
-                                 sortingHandler(
-                                    header.id,
-                                    header.column.getCanSort()
-                                 )
-                              }
-                           >
-                              <div>
-                                 {flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                 )}
-                              </div>
-                              {checkIsSorted(header.id) && (
-                                 <div className="absolute -right-6 top-1/2 -translate-y-1/2">
-                                    {sorting.find(item => item.id === header.id)
-                                       ?.desc ? (
-                                       <ArrowDown size={18} />
-                                    ) : (
-                                       <ArrowUp size={18} />
+                           {headerGroup.headers.map(header => (
+                              <th
+                                 key={header.id}
+                                 className={cn(styles["header-item"], {
+                                    [styles._specified]:
+                                       header.getSize() !== 150,
+                                 })}
+                                 style={{
+                                    width: `${
+                                       header.getSize() !== 150
+                                          ? header.getSize() + "px"
+                                          : ""
+                                    }`,
+                                 }}
+                              >
+                                 <div
+                                    className={styles["header-cell"]}
+                                    onClick={() => {
+                                       if (!isPending) {
+                                          sortingHandler(
+                                             header.id,
+                                             header.column.getCanSort()
+                                          );
+                                       }
+                                    }}
+                                 >
+                                    <div>
+                                       {flexRender(
+                                          header.column.columnDef.header,
+                                          header.getContext()
+                                       )}
+                                    </div>
+                                    {checkIsSorted(header.id) && (
+                                       <div className="absolute -right-6 top-1/2 -translate-y-1/2">
+                                          {sorting.find(
+                                             item => item.id === header.id
+                                          )?.desc ? (
+                                             <ArrowDown size={18} />
+                                          ) : (
+                                             <ArrowUp size={18} />
+                                          )}
+                                       </div>
                                     )}
                                  </div>
-                              )}
-                           </div>
-                        </th>
+                              </th>
+                           ))}
+                        </tr>
                      ))}
-                  </tr>
-               ))}
-            </thead>
-            <tbody>
-               {table.getRowModel().rows.map(row => (
-                  <tr
-                     key={row.id}
-                     className={cn(styles["data-row"], {
-                        [styles._selected]: row.getIsSelected(),
-                     })}
-                  >
-                     {row.getVisibleCells().map(cell => (
-                        <td
-                           key={cell.id}
-                           className={cn(styles["data-item"], {
-                              [styles._specified]:
-                                 cell.column.getSize() !== 150,
-                           })}
-                           style={{
-                              width: `${
-                                 cell.column.getSize() !== 150
-                                    ? cell.column.getSize() + "px"
-                                    : ""
-                              }`,
-                           }}
-                        >
-                           {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                           )}
-                        </td>
-                     ))}
-                  </tr>
-               ))}
-            </tbody>
-         </table>
-         <TableFooter
-            allRowsCount={response?.count ?? 0}
-            rowSelectedCount={Object.keys(rowSelection).length}
-            nextClickHandler={() => table.nextPage()}
-            prevClickHandler={() => table.previousPage()}
-            isNextDisabled={!table.getCanNextPage()}
-            isPrevDisabled={!table.getCanPreviousPage()}
-            pageCount={pageCount}
-            clickHandler={table.setPageIndex}
-            pageIndex={pagination.pageIndex}
-         />
+                  </thead>
+                  {isPending ? (
+                     <TableSkeleton table={table} />
+                  ) : (
+                     <tbody>
+                        {table.getRowModel().rows.map(row => (
+                           <tr
+                              key={row.id}
+                              className={cn(styles["data-row"], {
+                                 [styles._selected]: row.getIsSelected(),
+                              })}
+                           >
+                              {row.getVisibleCells().map(cell => (
+                                 <td
+                                    key={cell.id}
+                                    className={cn(styles["data-item"], {
+                                       [styles._specified]:
+                                          cell.column.getSize() !== 150,
+                                    })}
+                                    style={{
+                                       width: `${
+                                          cell.column.getSize() !== 150
+                                             ? cell.column.getSize() + "px"
+                                             : ""
+                                       }`,
+                                    }}
+                                 >
+                                    {flexRender(
+                                       cell.column.columnDef.cell,
+                                       cell.getContext()
+                                    )}
+                                 </td>
+                              ))}
+                           </tr>
+                        ))}
+                     </tbody>
+                  )}
+               </table>
+               <TableFooter
+                  allRowsCount={response?.count}
+                  rowSelectedCount={Object.keys(rowSelection).length}
+                  nextClickHandler={() => table.nextPage()}
+                  prevClickHandler={() => table.previousPage()}
+                  isNextDisabled={!table.getCanNextPage() || isPlaceholderData}
+                  isPrevDisabled={
+                     !table.getCanPreviousPage() || isPlaceholderData
+                  }
+                  pageCount={pageCount}
+                  clickHandler={table.setPageIndex}
+                  pageIndex={pagination.pageIndex}
+               />
+            </div>
+         )}
       </div>
    );
 };

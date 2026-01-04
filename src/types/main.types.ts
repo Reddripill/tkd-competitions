@@ -18,7 +18,3 @@ export interface IBaseEntityWithTitleAndCount {
 export interface IDeleteMany {
    ids: string[];
 }
-
-export interface IDeleteOne {
-   id: string;
-}

@@ -5,7 +5,7 @@ import React from "react";
 
 interface IProps extends IPaginationProps {
    rowSelectedCount: number;
-   allRowsCount: number;
+   allRowsCount?: number;
 }
 
 const TableFooter = ({
@@ -15,12 +15,17 @@ const TableFooter = ({
 }: IProps) => {
    return (
       <div className="flex justify-between items-center">
-         <div className="text-md">
-            Выбрано {rowSelectedCount} из {allRowsCount}
-         </div>
-         <div>
-            <TablePagination {...pagination} />
-         </div>
+         {allRowsCount && (
+            <>
+               <div className="text-md">
+                  Выбрано {rowSelectedCount} из {allRowsCount}
+               </div>
+
+               <div>
+                  <TablePagination {...pagination} />
+               </div>
+            </>
+         )}
       </div>
    );
 };
