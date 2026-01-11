@@ -7,27 +7,26 @@ interface IProps {
    setValue: (val: string) => void;
    selectedIds?: string[];
    source: string;
+   queryKey: string;
 }
 
-const TableActions = ({ value, setValue, selectedIds, source }: IProps) => {
+const TableActions = ({
+   value,
+   setValue,
+   selectedIds,
+   source,
+   queryKey,
+}: IProps) => {
    return (
       <div className="flex items-center justify-between mb-8">
          <div className="basis-xs">
-            {/* <InputAndSelect
-               isMulti={false}
-               source={API.DISCIPLINES}
-               queryKey={QUERY_KEYS.DISCIPLINES}
-               validation={false}
-               suggestion={false}
-               placeholder="Введите название"
-            /> */}
             <TableSearch
                value={value}
                setValue={setValue}
                placeholder="Введите название"
             />
          </div>
-         <DropDown ids={selectedIds} source={source} />
+         <DropDown ids={selectedIds} source={source} queryKey={queryKey} />
       </div>
    );
 };

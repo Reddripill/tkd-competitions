@@ -2,17 +2,33 @@ import { Plus } from "lucide-react";
 import { Button } from "./button";
 import Link from "next/link";
 
-const AddingButton = ({ link }: { link: string }) => {
+interface IProps {
+   link?: string;
+   action?: () => void;
+}
+
+const AddingButton = ({ link, action }: IProps) => {
+   const content = (
+      <>
+         <Plus />
+         <div>Добавить</div>
+      </>
+   );
+   const styles = "flex items-center gap-x-2 text-white";
    return (
       <Button
-         asChild={true}
+         asChild={!!link}
          size="lg"
-         className="bg-blue-accent hover:bg-blue-accent/80 transition-colors"
+         className="bg-blue-accent hover:bg-blue-accent/80 transition-colors px-4"
+         onClick={action}
       >
-         <Link href={link} className="flex items-center gap-x-2 text-white">
-            <Plus />
-            <div>Добавить</div>
-         </Link>
+         {link ? (
+            <Link href={link} className={styles}>
+               {content}
+            </Link>
+         ) : (
+            <div className={styles}>{content}</div>
+         )}
       </Button>
    );
 };

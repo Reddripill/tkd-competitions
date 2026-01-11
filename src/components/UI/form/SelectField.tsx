@@ -1,5 +1,5 @@
 import React from "react";
-import { useFieldContext } from "@/components/admin/screens/new-competition/NewCompetitionPage";
+import { useFieldContext } from "@/contexts/AdminFormContext";
 import InputAndSelect, { ISelectProps } from "../InputAndSelect";
 
 const SelectField = (props: ISelectProps) => {

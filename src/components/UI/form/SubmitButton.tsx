@@ -1,8 +1,8 @@
 import React from "react";
-import { useFormContext } from "@/components/admin/screens/new-competition/NewCompetitionPage";
 import { toast } from "sonner";
 import { Spinner } from "../lib-components/spinner";
 import ActionButton from "../buttons/ActionButton";
+import { useFormContext } from "@/contexts/AdminFormContext";
 
 const SubmitButton = () => {
    const form = useFormContext();

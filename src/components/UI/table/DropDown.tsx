@@ -10,15 +10,17 @@ import { useMutation } from "@tanstack/react-query";
 import { IDeleteMany } from "@/types/main.types";
 import { toast, Toaster } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
-import { QUERY_KEYS } from "@/constants/queryKeys";
+import ConfirmModal from "../ConfirmModal";
 
 interface IProps {
    ids?: string[];
    source: string;
+   queryKey: string;
 }
 
-const DropDown = ({ ids, source }: IProps) => {
+const DropDown = ({ ids, source, queryKey }: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
+   const [isModalOpen, setIsModalOpen] = useState(false);
    const mutation = useMutation({
       mutationFn: async (body: IDeleteMany) => {
          const res = await fetch(source, {
@@ -39,7 +41,7 @@ const DropDown = ({ ids, source }: IProps) => {
       onSuccess: () => {
          toast.success("Записи успешно удалены");
          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.DISCIPLINES],
+            queryKey: [queryKey],
          });
       },
 
@@ -47,10 +49,15 @@ const DropDown = ({ ids, source }: IProps) => {
          toast.error("Ошибка при удалении");
       },
    });
-   const clickHandler = () => {
-      setIsOpen(false);
+   const deleteEntity = () => {
       if (ids && ids.length > 0) {
          mutation.mutate({ ids });
+      }
+   };
+   const clickHandler = () => {
+      if (ids && ids.length > 0) {
+         setIsOpen(false);
+         setIsModalOpen(true);
       } else {
          toast.error("Записи для удаления не выбраны");
       }
@@ -58,6 +65,11 @@ const DropDown = ({ ids, source }: IProps) => {
    return (
       <div className="relative">
          <Toaster position="top-center" expand={true} richColors={true} />
+         <ConfirmModal
+            isOpen={isModalOpen}
+            setIsOpen={setIsModalOpen}
+            confirmedAction={deleteEntity}
+         />
          <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild={true}>
                <Ellipsis className="cursor-pointer" />

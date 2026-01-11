@@ -2,29 +2,13 @@
 import React from "react";
 import MainBlock from "../../MainBlock";
 import { FieldGroup } from "@/components/UI/lib-components/field";
-import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
-import { Plus } from "lucide-react";
 import { API } from "@/constants/api";
 import { newCompetitionSchema } from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { Toaster } from "sonner";
-import SubmitButton from "@/components/UI/form/SubmitButton";
-import SelectField from "@/components/UI/form/SelectField";
-
-export const { fieldContext, formContext, useFieldContext, useFormContext } =
-   createFormHookContexts();
-
-const { useAppForm } = createFormHook({
-   fieldContext,
-   formContext,
-   fieldComponents: {
-      SelectField,
-   },
-   formComponents: {
-      SubmitButton,
-   },
-});
+import { useAppForm } from "@/contexts/AdminFormContext";
+import AddFieldButton from "@/components/UI/form/AddFieldButton";
 
 const NewCompetitionPage = () => {
    const form = useAppForm({
@@ -153,28 +137,23 @@ const NewCompetitionPage = () => {
                                                 )
                                              )}
                                           </div>
-                                          <button
-                                             type="button"
-                                             className="flex items-center gap-x-2 mx-auto text-sm text-blue-accent"
-                                             onClick={() =>
+                                          <AddFieldButton
+                                             text="Добавить дисциплину"
+                                             clickHandler={() =>
                                                 subFieldArr.pushValue({
                                                    discipline: "",
                                                    categories: [],
                                                 })
                                              }
-                                          >
-                                             <Plus size={18} />
-                                             <div>Добавить дисциплину</div>
-                                          </button>
+                                          />
                                        </div>
                                     )}
                                  </form.Field>
                               </div>
                            ))}
-                           <button
-                              type="button"
-                              className="flex items-center gap-x-2 mx-auto text-sm text-blue-accent"
-                              onClick={() =>
+                           <AddFieldButton
+                              text="Добавить арену"
+                              clickHandler={() =>
                                  fieldArr.pushValue({
                                     arenaTitle: "",
                                     info: [
@@ -185,10 +164,7 @@ const NewCompetitionPage = () => {
                                     ],
                                  })
                               }
-                           >
-                              <Plus size={18} />
-                              <div>Добавить арену</div>
-                           </button>
+                           />
                         </div>
                      )}
                   </form.Field>

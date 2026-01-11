@@ -12,7 +12,7 @@ import {
    IBaseEntityWithTitleAndCount,
 } from "@/types/main.types";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, CircleX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableFooter from "./TableFooter";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -24,6 +24,7 @@ import { Checkbox } from "../lib-components/checkbox";
 import { dateFormatter } from "@/utils/date-formatter";
 import { Pen, Trash } from "lucide-react";
 import TableSkeleton from "./TableSkeleton";
+import ActionButton from "../buttons/ActionButton";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -115,6 +116,7 @@ const Table = ({ queryKey, source }: IProps) => {
       isPending,
       isError,
       isPlaceholderData,
+      refetch,
    } = useQuery<IBaseEntityWithTitleAndCount>({
       queryKey: [queryKey, pagination, debouncedValue, sorting],
       placeholderData: keepPreviousData,
@@ -225,7 +227,15 @@ const Table = ({ queryKey, source }: IProps) => {
    });
 
    if (isError) {
-      return <div>Ошибка :(</div>;
+      return (
+         <div className="mt-64 flex flex-col items-center justify-center">
+            <CircleX className="mb-4 size-14 text-red-accent" />
+            <h2 className="mb-8">Ошибка получения данных</h2>
+            <ActionButton size="lg" action={refetch}>
+               Попробовать снова
+            </ActionButton>
+         </div>
+      );
    }
    return (
       <div>
@@ -239,8 +249,8 @@ const Table = ({ queryKey, source }: IProps) => {
                   setValue={tableSearchHandler}
                   selectedIds={Object.keys(rowSelection)}
                   source={source}
+                  queryKey={queryKey}
                />
-
                <table className={styles.table}>
                   <thead>
                      {table.getHeaderGroups().map(headerGroup => (
