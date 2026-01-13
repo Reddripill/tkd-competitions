@@ -10,18 +10,31 @@ import {
 import ActionButton from "./buttons/ActionButton";
 import useOutside from "@/hooks/useOutside";
 import { useQuery } from "@tanstack/react-query";
-import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
+import {
+   IBaseEntityWithTitleAndCount,
+   ISourceAndKey,
+   SetStateType,
+} from "@/types/main.types";
 import { Spinner } from "./lib-components/spinner";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Grip, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { FieldLabel } from "./lib-components/field";
 import { cn } from "@/lib/utils";
+import { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "./buttons/button";
 
-export interface ISelectProps {
+export interface ISelectProps
+   extends Partial<ISourceAndKey>,
+      VariantProps<typeof buttonVariants> {
+   value?: string;
+   setValue?: SetStateType<string>;
+   selectedValues?: string[];
+   setSelectedValues?: SetStateType<string[]>;
+   initialValue?: string;
+   isControlledInput?: boolean;
+   isControlledSelect?: boolean;
    isMulti?: boolean;
-   source: string;
    label?: string;
-   queryKey?: string;
    validation?: boolean;
    suggestion?: boolean;
    isValid?: boolean;
@@ -33,6 +46,13 @@ export interface ISelectProps {
 }
 
 const InputAndSelect = ({
+   value: controlledValue,
+   setValue: setControlledValue,
+   selectedValues: controlledSelectedValues,
+   setSelectedValues: setControlledSelectedValues,
+   isControlledInput = false,
+   isControlledSelect = false,
+   initialValue,
    isMulti = true,
    source,
    label,
@@ -45,13 +65,29 @@ const InputAndSelect = ({
    errorMessage,
    suggestion = true,
    placeholder,
+   size = "lg",
 }: ISelectProps) => {
    const commandRef = useRef<HTMLDivElement>(null);
-   const [value, setValue] = useState("");
-   const debouncedValue = useDebounce(value);
+   const [uncontrolledValue, setUncontrolledValue] = useState(
+      initialValue ? initialValue : ""
+   );
+   const [uncontrolledSelectedValues, setUncontrolledSelectedValues] = useState<
+      string[]
+   >([]);
    const [open, setOpen] = useState(false);
-   const [selectedValues, setSelectedValues] = useState<string[]>([]);
    const [hoverIndex, setHoverIndex] = useState<number>(0);
+
+   const value =
+      isControlledInput && controlledValue
+         ? controlledValue
+         : uncontrolledValue;
+   const selectedValues =
+      isControlledSelect && controlledSelectedValues
+         ? controlledSelectedValues
+         : uncontrolledSelectedValues;
+
+   const debouncedValue = useDebounce(value);
+
    const {
       data: response,
       isError,
@@ -85,7 +121,11 @@ const InputAndSelect = ({
    useOutside(commandRef, closeHandler);
 
    const onChangeHandler = (val: string) => {
-      setValue(val);
+      if (isControlledInput && setControlledValue) {
+         setControlledValue(val);
+      } else {
+         setUncontrolledValue(val);
+      }
       if (!isMulti && changeHandler) {
          changeHandler(val);
       }
@@ -114,8 +154,31 @@ const InputAndSelect = ({
          if (changeHandler) {
             changeHandler(value);
          }
-         setValue("");
-         setSelectedValues(prev => [...prev, value]);
+         if (isControlledInput && setControlledValue) {
+            setControlledValue("");
+         } else {
+            setUncontrolledValue("");
+         }
+         if (isControlledSelect && setControlledSelectedValues) {
+            setControlledSelectedValues(prev => [...prev, value]);
+         } else {
+            setUncontrolledSelectedValues(prev => [...prev, value]);
+         }
+      }
+   };
+
+   const deleteHandler = (selectedVal: string) => {
+      if (unselectHandler) {
+         unselectHandler(selectedVal);
+         if (isControlledSelect && setControlledSelectedValues) {
+            setControlledSelectedValues(
+               selectedValues.filter(item => item !== selectedVal)
+            );
+         } else {
+            setUncontrolledSelectedValues(
+               selectedValues.filter(item => item !== selectedVal)
+            );
+         }
       }
    };
 
@@ -132,12 +195,25 @@ const InputAndSelect = ({
          );
       }
       if (e.key === "Enter" && hoverIndex >= 0) {
-         setValue(suggestedItems[hoverIndex].title);
+         if (isControlledInput && setControlledValue) {
+            setControlledValue(suggestedItems[hoverIndex].title);
+         } else {
+            setUncontrolledValue(suggestedItems[hoverIndex].title);
+         }
          setOpen(false);
       }
       if (e.key === "Escape") {
          setOpen(false);
       }
+   };
+
+   const heightStyle = {
+      "h-9 text-sm": size === "default",
+      "h-8 text-sm": size === "sm",
+      "h-10": size === "lg",
+      "size-9": size === "icon",
+      "size-8": size === "icon-sm",
+      "size-10": size === "icon-lg",
    };
    return (
       <div>
@@ -151,7 +227,7 @@ const InputAndSelect = ({
             </FieldLabel>
          )}
          <div>
-            <div className="flex items-center gap-x-4 h-10">
+            <div className={cn("flex items-center gap-x-4 h-10", heightStyle)}>
                <Command
                   ref={commandRef}
                   shouldFilter={false}
@@ -212,7 +288,7 @@ const InputAndSelect = ({
                      </CommandList>
                   )}
                </Command>
-               {isMulti && <ActionButton size="lg" action={submitHandler} />}
+               {isMulti && <ActionButton size={size} action={submitHandler} />}
             </div>
             {!isValid && validation && errorMessage && (
                <em role="alert" className="text-red-accent text-sm">
@@ -220,30 +296,21 @@ const InputAndSelect = ({
                </em>
             )}
             {isMulti && selectedValues.length > 0 && (
-               <div className="flex flex-col gap-y-4 mt-6">
-                  {selectedValues.map(selectedVal => (
+               <div className="flex flex-col gap-y-4 mt-6 max-h-[300px] overflow-auto">
+                  {selectedValues.map((selectedVal, index) => (
                      <div
-                        key={selectedVal}
-                        className="flex items-center gap-x-4 h-10"
+                        key={selectedVal + index}
+                        className={cn(
+                           "shrink-0 flex items-center gap-x-4",
+                           heightStyle
+                        )}
                      >
                         <div className="flex items-center h-full grow bg-light-gray rounded-lg pl-4">
                            {selectedVal}
                         </div>
-                        <div className="flex items-center justify-center h-full w-10 bg-light-gray rounded-lg cursor-grab">
-                           <Grip />
-                        </div>
                         <button
-                           type="submit"
-                           onClick={() => {
-                              if (unselectHandler) {
-                                 unselectHandler(selectedVal);
-                                 setSelectedValues(
-                                    selectedValues.filter(
-                                       item => item !== selectedVal
-                                    )
-                                 );
-                              }
-                           }}
+                           type="button"
+                           onClick={() => deleteHandler(selectedVal)}
                         >
                            <Trash2 className="text-red-accent" />
                         </button>

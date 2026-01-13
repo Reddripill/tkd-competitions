@@ -1,19 +1,20 @@
 import React from "react";
 import DropDown from "@/components/UI/table/DropDown";
 import TableSearch from "@/components/UI/table/TableSearch";
+import { ISourceAndKey } from "@/types/main.types";
 
-interface IProps {
+interface IProps extends ISourceAndKey {
    value: string;
    setValue: (val: string) => void;
    selectedIds?: string[];
-   source: string;
-   queryKey: string;
+   resettingSelection: () => void;
 }
 
 const TableActions = ({
    value,
    setValue,
    selectedIds,
+   resettingSelection,
    source,
    queryKey,
 }: IProps) => {
@@ -26,7 +27,12 @@ const TableActions = ({
                placeholder="Введите название"
             />
          </div>
-         <DropDown ids={selectedIds} source={source} queryKey={queryKey} />
+         <DropDown
+            ids={selectedIds}
+            source={source}
+            queryKey={queryKey}
+            resettingSelection={resettingSelection}
+         />
       </div>
    );
 };

@@ -8,7 +8,7 @@ const HomePage = () => {
       <MainBlock
          title="Список соревнований"
          subTitle="Наглядное представление всех соревнований и местами их проведения"
-         actions={<AddingButton link={ROUTES.NEWCOMPETITION} />}
+         actions={<AddingButton link={ROUTES.NEW_COMPETITION} />}
       >
          <div>HomePage</div>
       </MainBlock>

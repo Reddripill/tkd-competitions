@@ -4,5 +4,5 @@ export const ROUTES = {
    COMPETITIONS: "/admin/competitions",
    DISCIPLINES: "/admin/disciplines",
    CATEGORIES: "/admin/categories",
-   NEWCOMPETITION: "/admin/new-competition",
+   NEW_COMPETITION: "/admin/new-competition",
 } as const;

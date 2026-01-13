@@ -7,18 +7,17 @@ import {
 import { Ellipsis, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useMutation } from "@tanstack/react-query";
-import { IDeleteMany } from "@/types/main.types";
+import { IDeleteMany, ISourceAndKey } from "@/types/main.types";
 import { toast, Toaster } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
-import ConfirmModal from "../ConfirmModal";
+import DeleteConfirmModal from "../modals/DeleteConfirmModal";
 
-interface IProps {
+interface IProps extends ISourceAndKey {
    ids?: string[];
-   source: string;
-   queryKey: string;
+   resettingSelection: () => void;
 }
 
-const DropDown = ({ ids, source, queryKey }: IProps) => {
+const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [isModalOpen, setIsModalOpen] = useState(false);
    const mutation = useMutation({
@@ -40,6 +39,7 @@ const DropDown = ({ ids, source, queryKey }: IProps) => {
 
       onSuccess: () => {
          toast.success("Записи успешно удалены");
+         resettingSelection();
          queryClient.invalidateQueries({
             queryKey: [queryKey],
          });
@@ -55,8 +55,8 @@ const DropDown = ({ ids, source, queryKey }: IProps) => {
       }
    };
    const clickHandler = () => {
+      setIsOpen(false);
       if (ids && ids.length > 0) {
-         setIsOpen(false);
          setIsModalOpen(true);
       } else {
          toast.error("Записи для удаления не выбраны");
@@ -65,7 +65,7 @@ const DropDown = ({ ids, source, queryKey }: IProps) => {
    return (
       <div className="relative">
          <Toaster position="top-center" expand={true} richColors={true} />
-         <ConfirmModal
+         <DeleteConfirmModal
             isOpen={isModalOpen}
             setIsOpen={setIsModalOpen}
             confirmedAction={deleteEntity}

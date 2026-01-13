@@ -10,6 +10,7 @@ import {
 import {
    IBaseEntityWithTitle,
    IBaseEntityWithTitleAndCount,
+   ISourceAndKey,
 } from "@/types/main.types";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, CircleX } from "lucide-react";
@@ -22,9 +23,10 @@ import styles from "./Table.module.css";
 import TableActions from "./TableActions";
 import { Checkbox } from "../lib-components/checkbox";
 import { dateFormatter } from "@/utils/date-formatter";
-import { Pen, Trash } from "lucide-react";
+import { Pen } from "lucide-react";
 import TableSkeleton from "./TableSkeleton";
 import ActionButton from "../buttons/ActionButton";
+import DeleteAction from "./DeleteAction";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -80,23 +82,15 @@ export const columns = [
    columnHelper.display({
       id: "delete",
       cell: ({ table, row }) => (
-         <Trash
-            onClick={() => {
-               table.options.meta?.onDelete(row.id);
-            }}
-            className="size-5 text-black cursor-pointer"
+         <DeleteAction
+            confirmedAction={() => table.options.meta?.onDelete(row.id)}
          />
       ),
       size: 30,
    }),
 ];
 
-interface IProps {
-   source: string;
-   queryKey: string;
-}
-
-const Table = ({ queryKey, source }: IProps) => {
+const Table = ({ queryKey, source }: ISourceAndKey) => {
    const [rowSelection, setRowSelection] = useState({});
    const [inputValue, setInputValue] = useState("");
    const debouncedValue = useDebounce(inputValue);
@@ -226,6 +220,10 @@ const Table = ({ queryKey, source }: IProps) => {
       },
    });
 
+   const resettingSelection = () => {
+      table.resetRowSelection();
+   };
+
    if (isError) {
       return (
          <div className="mt-64 flex flex-col items-center justify-center">
@@ -248,6 +246,7 @@ const Table = ({ queryKey, source }: IProps) => {
                   value={inputValue}
                   setValue={tableSearchHandler}
                   selectedIds={Object.keys(rowSelection)}
+                  resettingSelection={resettingSelection}
                   source={source}
                   queryKey={queryKey}
                />
