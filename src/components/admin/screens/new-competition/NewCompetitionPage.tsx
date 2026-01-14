@@ -6,24 +6,48 @@ import { API } from "@/constants/api";
 import { newCompetitionSchema } from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { Toaster } from "sonner";
+import { toast } from "sonner";
 import { useAppForm } from "@/contexts/AdminFormContext";
 import AddFieldButton from "@/components/UI/form/AddFieldButton";
+import { useMutation } from "@tanstack/react-query";
+import { ICompetition } from "./new-competition.types";
 
 const NewCompetitionPage = () => {
-   const form = useAppForm({
-      defaultValues: defaultCompetition,
-      onSubmit: async ({ value }) => {
-         await fetch(API.COMPETITIONS, {
+   const mutation = useMutation({
+      mutationFn: async (body: ICompetition) => {
+         const res = await fetch(API.COMPETITIONS, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
             },
             body: JSON.stringify({
-               tournamentTitle: value.tournamentTitle,
-               arenas: value.arenas,
+               tournamentTitle: body.tournamentTitle,
+               arenas: body.arenas,
             }),
          });
+
+         if (!res.ok) {
+            throw new Error("Ошибка при создании");
+         }
+
+         return res.json();
+      },
+
+      onSuccess: () => {
+         toast.success("Соревнования успешно созданы");
+         /* queryClient.invalidateQueries({
+            queryKey: [queryKey],
+         }); */
+      },
+
+      onError: () => {
+         toast.error("Ошибка при создании");
+      },
+   });
+   const form = useAppForm({
+      defaultValues: defaultCompetition,
+      onSubmit: ({ value }) => {
+         mutation.mutate(value);
       },
       validators: {
          onChange: newCompetitionSchema,
@@ -32,7 +56,6 @@ const NewCompetitionPage = () => {
    });
    return (
       <MainBlock title="Создание нового соревнования">
-         <Toaster position="top-center" expand={true} richColors={true} />
          <div className="flex justify-between gap-x-24 w-full">
             <form
                onSubmit={e => {

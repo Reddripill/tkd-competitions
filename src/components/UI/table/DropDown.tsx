@@ -8,7 +8,7 @@ import { Ellipsis, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useMutation } from "@tanstack/react-query";
 import { IDeleteMany, ISourceAndKey } from "@/types/main.types";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
 import DeleteConfirmModal from "../modals/DeleteConfirmModal";
 
@@ -64,7 +64,6 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
    };
    return (
       <div className="relative">
-         <Toaster position="top-center" expand={true} richColors={true} />
          <DeleteConfirmModal
             isOpen={isModalOpen}
             setIsOpen={setIsModalOpen}

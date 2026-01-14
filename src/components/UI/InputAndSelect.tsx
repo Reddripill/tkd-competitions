@@ -252,7 +252,7 @@ const InputAndSelect = ({
                            !isValid,
                      })}
                   />
-                  {!isError && open && suggestion && (
+                  {!isError && open && suggestion && value.length !== 0 && (
                      <CommandList className="absolute top-[calc(100%+6px)] left-0 z-10 w-full h-auto bg-white rounded-lg shadow-main">
                         {isFetching ? (
                            <div className="py-4 flex justify-center">

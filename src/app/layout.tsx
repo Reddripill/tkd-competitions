@@ -2,6 +2,7 @@ import { Roboto } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import QueryProvider from "@/providers/QueryProvider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
    title: "Расписание соревнование ТКД по тхэквондо",
@@ -20,7 +21,10 @@ export default function RootLayout({
    return (
       <html lang="ru" suppressHydrationWarning>
          <QueryProvider>
-            <body className={roboto.className}>{children}</body>
+            <body className={roboto.className}>
+               <Toaster position="top-center" expand={true} richColors={true} />
+               {children}
+            </body>
          </QueryProvider>
       </html>
    );

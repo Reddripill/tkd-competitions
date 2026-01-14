@@ -9,30 +9,32 @@ import {
 } from "../lib-components/dialog";
 import { ISourceAndKey, SetStateType } from "@/types/main.types";
 import ActionButton from "../buttons/ActionButton";
-import CreateForm from "../form/create-form/CreateForm";
 import { XIcon } from "lucide-react";
 import ConfirmModalContent from "./ConfirmModalContent";
 import { useAppForm } from "@/contexts/AdminFormContext";
-import { defaultCreationData } from "../form/create-form/create-form.constants";
-import { useAddEntity } from "@/hooks/query";
+import { useGetEntity } from "@/hooks/query";
+import UpdateForm from "../form/update-form/UpdateForm";
 
 interface IProps extends ISourceAndKey {
    isOpen: boolean;
    setIsOpen: SetStateType<boolean>;
+   id: string;
 }
 
-const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
+const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-   const [selectedValues, setSelectedValues] = useState<string[]>([]);
-   const { mutate: createEntities } = useAddEntity({ queryKey, source });
-   const form = useAppForm({
-      defaultValues: defaultCreationData,
+   const { data, isPending, isError, isSuccess } = useGetEntity({
+      queryKey,
+      source,
+      id,
+      enabled: !!isOpen,
    });
-   const createHandler = () => {
-      if (selectedValues.length > 0) {
-         createEntities(selectedValues);
-      }
-   };
+
+   const form = useAppForm({
+      defaultValues: {
+         title: data?.title ?? "",
+      },
+   });
    return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
          <DialogPortal>
@@ -46,27 +48,29 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                   e.preventDefault();
                }}
             >
-               {!isConfirmModalOpen &&
-               (isOpen || selectedValues.length === 0) ? (
+               {!isConfirmModalOpen && isOpen ? (
                   <>
                      <DialogTitle className="text-xl font-bold">
-                        Создание записей
+                        Изменение
                      </DialogTitle>
                      <DialogDescription>
-                        Добавление только уникальных записей
+                        Измение данных записи
                      </DialogDescription>
                      <div className="text-md mb-4">
-                        <CreateForm
+                        <UpdateForm
                            form={form}
                            source={source}
                            queryKey={queryKey}
-                           value={selectedValues}
-                           setValue={setSelectedValues}
+                           isPending={isPending}
+                           initialValue={data?.title}
                         />
                      </div>
                      <div className="flex items-center justify-end">
                         <DialogClose asChild={true}>
-                           <ActionButton btnType="blue" onClick={createHandler}>
+                           <ActionButton
+                              btnType="blue"
+                              onClick={() => console.log("create")}
+                           >
                               Создать
                            </ActionButton>
                         </DialogClose>
@@ -74,12 +78,12 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                      <DialogClose
                         className="ring-offset-background absolute top-4 right-4 rounded-xs opacity-70 transition-opacity size-5 cursor-pointer"
                         asChild={true}
-                        onClick={e => {
+                        /* onClick={e => {
                            if (selectedValues.length > 0) {
                               e.preventDefault();
                               setIsConfirmModalOpen(true);
                            }
-                        }}
+                        }} */
                      >
                         <XIcon />
                      </DialogClose>
@@ -89,10 +93,6 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                      clickHandler={() => setIsConfirmModalOpen(false)}
                      closeHandler={() => {
                         setIsOpen(false);
-                        setTimeout(() => {
-                           form.reset();
-                           setSelectedValues([]);
-                        }, 500);
                      }}
                      // Убрать костыль
                   />
@@ -103,4 +103,4 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
    );
 };
 
-export default CreateModal;
+export default UpdateModal;

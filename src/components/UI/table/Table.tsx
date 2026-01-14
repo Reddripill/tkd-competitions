@@ -17,7 +17,7 @@ import { ArrowDown, ArrowUp, CircleX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableFooter from "./TableFooter";
 import { useDebounce } from "@/hooks/useDebounce";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
 import styles from "./Table.module.css";
 import TableActions from "./TableActions";
@@ -27,6 +27,7 @@ import { Pen } from "lucide-react";
 import TableSkeleton from "./TableSkeleton";
 import ActionButton from "../buttons/ActionButton";
 import DeleteAction from "./DeleteAction";
+import UpdateAction from "./UpdateAction";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -76,7 +77,16 @@ export const columns = [
    }),
    columnHelper.display({
       id: "update",
-      cell: () => <Pen className="size-5 text-black cursor-pointer" />,
+      cell: ({ row, table }) => {
+         const metaData = table.options.meta;
+         return (
+            <UpdateAction
+               id={row.id}
+               queryKey={metaData?.queryKey}
+               source={metaData?.source}
+            />
+         );
+      },
       size: 30,
    }),
    columnHelper.display({
@@ -217,6 +227,8 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
       },
       meta: {
          onDelete: mutation.mutate,
+         queryKey,
+         source,
       },
    });
 
@@ -241,7 +253,6 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
             <div>Записей еще нет</div>
          ) : (
             <div>
-               <Toaster position="top-center" expand={true} richColors={true} />
                <TableActions
                   value={inputValue}
                   setValue={tableSearchHandler}

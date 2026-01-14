@@ -21,15 +21,7 @@ const ConfirmModal = ({ isOpen, setIsOpen, confirmedAction }: IProps) => {
    return (
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
          <DialogPortal>
-            <DialogContent
-               className="bg-white border-none shadow-popover"
-               onInteractOutside={e => {
-                  e.preventDefault();
-               }}
-               onEscapeKeyDown={e => {
-                  e.preventDefault();
-               }}
-            >
+            <DialogContent className="bg-white border-none shadow-popover">
                <DialogTitle className="text-xl font-bold">Удаление</DialogTitle>
                <DialogDescription className="text-md mb-4">
                   Запись невозможно будет восстановить. Вы уверены?

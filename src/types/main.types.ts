@@ -2,7 +2,7 @@ export type SetStateType<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export interface ISourceAndKey {
    source: string;
-   queryKey: string;
+   queryKey: string[] | string;
 }
 
 export interface IBaseEntity {

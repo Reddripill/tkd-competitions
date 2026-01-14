@@ -6,11 +6,12 @@ import {
 } from "../lib-components/dialog";
 import ActionButton from "../buttons/ActionButton";
 
-const ConfirmModalContent = ({
-   clickHandler,
-}: {
+interface IProps {
+   closeHandler: () => void;
    clickHandler: () => void;
-}) => {
+}
+
+const ConfirmModalContent = ({ closeHandler, clickHandler }: IProps) => {
    return (
       <>
          <DialogTitle className="text-xl font-bold">
@@ -29,7 +30,13 @@ const ConfirmModalContent = ({
             >
                <ActionButton btnType="basic">Отмена</ActionButton>
             </DialogClose>
-            <DialogClose asChild={true} onClick={clickHandler}>
+            <DialogClose
+               asChild={true}
+               onClick={() => {
+                  clickHandler();
+                  closeHandler();
+               }}
+            >
                <ActionButton btnType="delete">Закрыть</ActionButton>
             </DialogClose>
          </div>
