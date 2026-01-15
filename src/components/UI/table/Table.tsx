@@ -23,7 +23,6 @@ import styles from "./Table.module.css";
 import TableActions from "./TableActions";
 import { Checkbox } from "../lib-components/checkbox";
 import { dateFormatter } from "@/utils/date-formatter";
-import { Pen } from "lucide-react";
 import TableSkeleton from "./TableSkeleton";
 import ActionButton from "../buttons/ActionButton";
 import DeleteAction from "./DeleteAction";
