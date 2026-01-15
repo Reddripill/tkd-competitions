@@ -11,10 +11,10 @@ import { ISourceAndKey, SetStateType } from "@/types/main.types";
 import ActionButton from "../buttons/ActionButton";
 import CreateForm from "../form/create-form/CreateForm";
 import { XIcon } from "lucide-react";
-import ConfirmModalContent from "./ConfirmModalContent";
 import { useAppForm } from "@/contexts/AdminFormContext";
 import { defaultCreationData } from "../form/create-form/create-form.constants";
 import { useAddEntity } from "@/hooks/query";
+import ConfirmModal from "./ConfirmModal";
 
 interface IProps extends ISourceAndKey {
    isOpen: boolean;
@@ -28,78 +28,92 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
    const form = useAppForm({
       defaultValues: defaultCreationData,
    });
+
    const createHandler = () => {
       if (selectedValues.length > 0) {
          createEntities(selectedValues);
       }
    };
+
+   const showConfirmHandler = () => {
+      setIsOpen(false);
+      setIsConfirmModalOpen(true);
+   };
+
+   const cancelHandler = () => {
+      setIsOpen(true);
+      setIsConfirmModalOpen(false);
+   };
+
+   const closeHandler = () => {
+      setIsOpen(false);
+      setIsConfirmModalOpen(false);
+      form.reset();
+      setSelectedValues([]);
+   };
+
    return (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-         <DialogPortal>
-            <DialogContent
-               showCloseButton={false}
-               className="bg-white border-none shadow-popover visible opacity-100 transition-opacity"
-               onInteractOutside={e => {
-                  e.preventDefault();
-               }}
-               onEscapeKeyDown={e => {
-                  e.preventDefault();
-               }}
-            >
-               {!isConfirmModalOpen &&
-               (isOpen || selectedValues.length === 0) ? (
-                  <>
-                     <DialogTitle className="text-xl font-bold">
-                        Создание записей
-                     </DialogTitle>
-                     <DialogDescription>
-                        Добавление только уникальных записей
-                     </DialogDescription>
-                     <div className="text-md mb-4">
-                        <CreateForm
-                           form={form}
-                           source={source}
-                           queryKey={queryKey}
-                           value={selectedValues}
-                           setValue={setSelectedValues}
-                        />
-                     </div>
-                     <div className="flex items-center justify-end">
-                        <DialogClose asChild={true}>
-                           <ActionButton btnType="blue" onClick={createHandler}>
-                              Создать
-                           </ActionButton>
-                        </DialogClose>
-                     </div>
-                     <DialogClose
-                        className="ring-offset-background absolute top-4 right-4 rounded-xs opacity-70 transition-opacity size-5 cursor-pointer"
-                        asChild={true}
-                        onClick={e => {
-                           if (selectedValues.length > 0) {
-                              e.preventDefault();
-                              setIsConfirmModalOpen(true);
-                           }
-                        }}
-                     >
-                        <XIcon />
+      <ConfirmModal
+         title="Вы уверены?"
+         description="Все введенные данные будут утеряны"
+         actionBtnText="Закрыть"
+         confirmedAction={closeHandler}
+         cancelHandler={cancelHandler}
+         isOpen={isConfirmModalOpen}
+         setIsOpen={setIsConfirmModalOpen}
+         btnType="delete"
+      >
+         <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogPortal>
+               <DialogContent
+                  showCloseButton={false}
+                  className="bg-white border-none shadow-popover visible opacity-100 transition-opacity"
+                  onInteractOutside={e => {
+                     e.preventDefault();
+                  }}
+                  onEscapeKeyDown={e => {
+                     e.preventDefault();
+                     showConfirmHandler();
+                  }}
+               >
+                  <DialogTitle className="text-xl font-bold">
+                     Создание записей
+                  </DialogTitle>
+                  <DialogDescription>
+                     Добавление только уникальных записей
+                  </DialogDescription>
+                  <div className="text-md mb-4">
+                     <CreateForm
+                        form={form}
+                        source={source}
+                        queryKey={queryKey}
+                        value={selectedValues}
+                        setValue={setSelectedValues}
+                     />
+                  </div>
+                  <div className="flex items-center justify-end">
+                     <DialogClose asChild={true}>
+                        <ActionButton btnType="blue" onClick={createHandler}>
+                           Создать
+                        </ActionButton>
                      </DialogClose>
-                  </>
-               ) : (
-                  <ConfirmModalContent
-                     clickHandler={() => setIsConfirmModalOpen(false)}
-                     closeHandler={() => {
-                        setIsOpen(false);
-                        setTimeout(() => {
-                           form.reset();
-                           setSelectedValues([]);
-                        }, 500);
+                  </div>
+                  <DialogClose
+                     className="ring-offset-background absolute top-4 right-4 rounded-xs opacity-70 transition-opacity size-5 cursor-pointer"
+                     asChild={true}
+                     onClick={e => {
+                        if (selectedValues.length > 0) {
+                           e.preventDefault();
+                           showConfirmHandler();
+                        }
                      }}
-                     // Убрать костыль
-                  />
-               )}
-            </DialogContent>
-         </DialogPortal>
-      </Dialog>
+                  >
+                     <XIcon />
+                  </DialogClose>
+               </DialogContent>
+            </DialogPortal>
+         </Dialog>
+      </ConfirmModal>
    );
 };
 

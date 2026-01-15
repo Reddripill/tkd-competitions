@@ -6,7 +6,6 @@ import { Skeleton } from "../../lib-components/skeleton";
 
 interface IProps extends ISourceAndKey {
    isPending?: boolean;
-   initialValue?: string;
 }
 
 const UpdateForm = withForm({
@@ -14,16 +13,9 @@ const UpdateForm = withForm({
    props: {
       source: "",
       queryKey: "",
-      initialValue: "",
       isPending: false,
    } as IProps,
-   render: function Render({
-      form,
-      source,
-      queryKey,
-      isPending,
-      initialValue,
-   }) {
+   render: function Render({ form, source, queryKey, isPending }) {
       return (
          <div>
             <form
@@ -40,7 +32,8 @@ const UpdateForm = withForm({
                      {field => {
                         return (
                            <field.SelectField
-                              initialValue={initialValue}
+                              isControlledInput={true}
+                              value={field.state.value}
                               isMulti={false}
                               label="Название *"
                               source={source}

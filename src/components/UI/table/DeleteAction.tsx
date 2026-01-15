@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Trash } from "lucide-react";
-import DeleteConfirmModal from "../modals/DeleteConfirmModal";
+import ConfirmModal from "../modals/ConfirmModal";
 
 interface IProps {
    confirmedAction: () => void;
@@ -14,10 +14,14 @@ const DeleteAction = ({ confirmedAction }: IProps) => {
             onClick={() => setIsOpen(true)}
             className="size-5 cursor-pointer text-red-accent"
          />
-         <DeleteConfirmModal
+         <ConfirmModal
+            title="Удаление"
+            description="Запись невозможно будет восстановить. Вы уверены?"
+            actionBtnText="Удалить"
+            confirmedAction={confirmedAction}
             isOpen={isOpen}
             setIsOpen={setIsOpen}
-            confirmedAction={confirmedAction}
+            btnType="delete"
          />
       </>
    );

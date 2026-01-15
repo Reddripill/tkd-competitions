@@ -85,7 +85,6 @@ const InputAndSelect = ({
       isControlledSelect && controlledSelectedValues
          ? controlledSelectedValues
          : uncontrolledSelectedValues;
-
    const debouncedValue = useDebounce(value);
 
    const {
@@ -121,8 +120,11 @@ const InputAndSelect = ({
    useOutside(commandRef, closeHandler);
 
    const onChangeHandler = (val: string) => {
-      if (isControlledInput && setControlledValue) {
-         setControlledValue(val);
+      if (isControlledInput) {
+         if (setControlledValue) {
+            setControlledValue(val);
+         } else {
+         }
       } else {
          setUncontrolledValue(val);
       }
@@ -236,6 +238,7 @@ const InputAndSelect = ({
                   <CommandInput
                      value={value}
                      onValueChange={val => {
+                        console.log("change", val);
                         onChangeHandler(val);
                      }}
                      onKeyDown={handleKeyDown}

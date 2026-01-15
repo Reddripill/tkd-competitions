@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { IDeleteMany, ISourceAndKey } from "@/types/main.types";
 import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
-import DeleteConfirmModal from "../modals/DeleteConfirmModal";
+import ConfirmModal from "../modals/ConfirmModal";
 
 interface IProps extends ISourceAndKey {
    ids?: string[];
@@ -49,7 +49,8 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
          toast.error("Ошибка при удалении");
       },
    });
-   const deleteEntity = () => {
+
+   const deleteEntityHandler = () => {
       if (ids && ids.length > 0) {
          mutation.mutate({ ids });
       }
@@ -64,10 +65,14 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
    };
    return (
       <div className="relative">
-         <DeleteConfirmModal
+         <ConfirmModal
+            title="Удаление"
+            description="Запись невозможно будет восстановить. Вы уверены?"
+            actionBtnText="Удалить"
+            confirmedAction={deleteEntityHandler}
             isOpen={isModalOpen}
             setIsOpen={setIsModalOpen}
-            confirmedAction={deleteEntity}
+            btnType="delete"
          />
          <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild={true}>

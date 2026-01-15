@@ -3,7 +3,7 @@ import { Button, buttonVariants } from "./button";
 import { VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-interface IProps
+export interface IActionButtonProps
    extends React.ComponentProps<"button">,
       VariantProps<typeof buttonVariants> {
    action?: () => void;
@@ -18,7 +18,7 @@ const ActionButton = ({
    className,
    btnType = "blue",
    ...props
-}: IProps) => {
+}: IActionButtonProps) => {
    return (
       <Button
          type="button"
