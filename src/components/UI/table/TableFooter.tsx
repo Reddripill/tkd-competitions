@@ -14,19 +14,18 @@ const TableFooter = ({
    ...pagination
 }: IProps) => {
    return (
-      <div className="flex justify-between items-center">
-         {allRowsCount && (
-            <>
+      <>
+         {!!allRowsCount && (
+            <div className="flex justify-between items-center">
                <div className="text-md">
                   Выбрано {rowSelectedCount} из {allRowsCount}
                </div>
-
                <div>
                   <TablePagination {...pagination} />
                </div>
-            </>
+            </div>
          )}
-      </div>
+      </>
    );
 };
 

@@ -29,9 +29,15 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
       defaultValues: defaultCreationData,
    });
 
+   const resetForm = () => {
+      form.reset();
+      setSelectedValues([]);
+   };
+
    const createHandler = () => {
       if (selectedValues.length > 0) {
          createEntities(selectedValues);
+         resetForm();
       }
    };
 
@@ -48,8 +54,7 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
    const closeHandler = () => {
       setIsOpen(false);
       setIsConfirmModalOpen(false);
-      form.reset();
-      setSelectedValues([]);
+      resetForm();
    };
 
    return (
@@ -91,7 +96,20 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                         setValue={setSelectedValues}
                      />
                   </div>
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end gap-x-2">
+                     <DialogClose asChild={true}>
+                        <ActionButton
+                           btnType="basic"
+                           onClick={e => {
+                              if (selectedValues.length > 0) {
+                                 e.preventDefault();
+                                 showConfirmHandler();
+                              }
+                           }}
+                        >
+                           Отмена
+                        </ActionButton>
+                     </DialogClose>
                      <DialogClose asChild={true}>
                         <ActionButton btnType="blue" onClick={createHandler}>
                            Создать

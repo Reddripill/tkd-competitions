@@ -27,6 +27,8 @@ import TableSkeleton from "./TableSkeleton";
 import ActionButton from "../buttons/ActionButton";
 import DeleteAction from "./DeleteAction";
 import UpdateAction from "./UpdateAction";
+import NotSearched from "./NotSearched";
+import NotExist from "./NotExist";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 
@@ -58,7 +60,7 @@ export const columns = [
          const { pageIndex, pageSize } = table.getState().pagination;
          return pageIndex * pageSize + row.index + 1;
       },
-      size: 60,
+      size: 40,
    }),
    columnHelper.accessor("title", {
       header: "Название",
@@ -67,12 +69,12 @@ export const columns = [
    columnHelper.accessor("updatedAt", {
       header: "Дата изменения",
       cell: info => dateFormatter(info.getValue()),
-      size: 250,
+      size: 160,
    }),
    columnHelper.accessor("createdAt", {
       header: "Дата создания",
       cell: info => dateFormatter(info.getValue()),
-      size: 250,
+      size: 160,
    }),
    columnHelper.display({
       id: "update",
@@ -86,7 +88,7 @@ export const columns = [
             />
          );
       },
-      size: 30,
+      size: 20,
    }),
    columnHelper.display({
       id: "delete",
@@ -95,14 +97,14 @@ export const columns = [
             confirmedAction={() => table.options.meta?.onDelete(row.id)}
          />
       ),
-      size: 30,
+      size: 20,
    }),
 ];
 
 const Table = ({ queryKey, source }: ISourceAndKey) => {
    const [rowSelection, setRowSelection] = useState({});
-   const [inputValue, setInputValue] = useState("");
-   const debouncedValue = useDebounce(inputValue);
+   const [inputValue, setInputValue] = useState<string | null>(null);
+   const debouncedValue = useDebounce(inputValue ?? "");
    const [sorting, setSorting] = useState<SortingState>([
       {
          id: "updatedAt",
@@ -157,8 +159,13 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
          return res.json();
       },
 
-      onSuccess: () => {
+      onSuccess: (_, id) => {
          toast.success("Записи успешно удалены");
+         setRowSelection(prev => {
+            return Object.fromEntries(
+               Object.entries(prev).filter(item => item[0] !== id)
+            );
+         });
          queryClient.invalidateQueries({
             queryKey: [queryKey],
          });
@@ -248,18 +255,22 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
    }
    return (
       <div>
-         {isSuccess && response?.count === 0 ? (
-            <div>Записей еще нет</div>
-         ) : (
-            <div>
-               <TableActions
-                  value={inputValue}
-                  setValue={tableSearchHandler}
-                  selectedIds={Object.keys(rowSelection)}
-                  resettingSelection={resettingSelection}
-                  source={source}
-                  queryKey={queryKey}
-               />
+         <div>
+            <TableActions
+               value={inputValue ?? ""}
+               setValue={tableSearchHandler}
+               selectedIds={Object.keys(rowSelection)}
+               resettingSelection={resettingSelection}
+               source={source}
+               queryKey={queryKey}
+            />
+            {!isPending && isSuccess && response?.count === 0 ? (
+               inputValue === null ? (
+                  <NotExist />
+               ) : (
+                  <NotSearched inputValue={inputValue} />
+               )
+            ) : (
                <table className={styles.table}>
                   <thead>
                      {table.getHeaderGroups().map(headerGroup => (
@@ -272,7 +283,7 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
                                  key={header.id}
                                  className={cn(styles["header-item"], {
                                     [styles._specified]:
-                                       header.getSize() !== 150,
+                                       header.getSize() <= 100,
                                  })}
                                  style={{
                                     width: `${
@@ -332,7 +343,7 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
                                     key={cell.id}
                                     className={cn(styles["data-item"], {
                                        [styles._specified]:
-                                          cell.column.getSize() !== 150,
+                                          cell.column.getSize() <= 100,
                                     })}
                                     style={{
                                        width: `${
@@ -340,12 +351,19 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
                                              ? cell.column.getSize() + "px"
                                              : ""
                                        }`,
+                                       minWidth: `${
+                                          cell.column.getSize() !== 150
+                                             ? cell.column.getSize() + "px"
+                                             : ""
+                                       }`,
                                     }}
                                  >
-                                    {flexRender(
-                                       cell.column.columnDef.cell,
-                                       cell.getContext()
-                                    )}
+                                    <div className="size-full overflow-hidden whitespace-nowrap text-ellipsis">
+                                       {flexRender(
+                                          cell.column.columnDef.cell,
+                                          cell.getContext()
+                                       )}
+                                    </div>
                                  </td>
                               ))}
                            </tr>
@@ -353,21 +371,19 @@ const Table = ({ queryKey, source }: ISourceAndKey) => {
                      </tbody>
                   )}
                </table>
-               <TableFooter
-                  allRowsCount={response?.count}
-                  rowSelectedCount={Object.keys(rowSelection).length}
-                  nextClickHandler={() => table.nextPage()}
-                  prevClickHandler={() => table.previousPage()}
-                  isNextDisabled={!table.getCanNextPage() || isPlaceholderData}
-                  isPrevDisabled={
-                     !table.getCanPreviousPage() || isPlaceholderData
-                  }
-                  pageCount={pageCount}
-                  clickHandler={table.setPageIndex}
-                  pageIndex={pagination.pageIndex}
-               />
-            </div>
-         )}
+            )}
+            <TableFooter
+               allRowsCount={response?.count}
+               rowSelectedCount={Object.keys(rowSelection).length}
+               nextClickHandler={() => table.nextPage()}
+               prevClickHandler={() => table.previousPage()}
+               isNextDisabled={!table.getCanNextPage() || isPlaceholderData}
+               isPrevDisabled={!table.getCanPreviousPage() || isPlaceholderData}
+               pageCount={pageCount}
+               clickHandler={table.setPageIndex}
+               pageIndex={pagination.pageIndex}
+            />
+         </div>
       </div>
    );
 };

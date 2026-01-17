@@ -18,7 +18,6 @@ import {
 import { Spinner } from "./lib-components/spinner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Trash2 } from "lucide-react";
-import { FieldLabel } from "./lib-components/field";
 import { cn } from "@/lib/utils";
 import { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "./buttons/button";
@@ -100,7 +99,7 @@ const InputAndSelect = ({
          const result = await data.json();
          return result;
       },
-      enabled: !!open && !!source && !!queryKey,
+      enabled: !!open && !!source && !!queryKey && !!suggestion,
    });
 
    const suggestedItems = response?.data.filter(
@@ -185,6 +184,11 @@ const InputAndSelect = ({
    };
 
    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (!suggestion && isMulti) {
+         if (e.key === "Enter") {
+            submitHandler();
+         }
+      }
       if (!open || !suggestedItems) return;
       if (e.key === "ArrowDown") {
          e.preventDefault();
@@ -202,7 +206,6 @@ const InputAndSelect = ({
          } else {
             setUncontrolledValue(suggestedItems[hoverIndex].title);
          }
-         setOpen(false);
       }
       if (e.key === "Escape") {
          setOpen(false);
@@ -220,13 +223,13 @@ const InputAndSelect = ({
    return (
       <div>
          {label && (
-            <FieldLabel
-               className={cn("mb-3", {
+            <div
+               className={cn("mb-2 text-sm", {
                   "text-red-accent": !isValid && validation && errorMessage,
                })}
             >
                {label}
-            </FieldLabel>
+            </div>
          )}
          <div>
             <div className={cn("flex items-center gap-x-4 h-10", heightStyle)}>
@@ -234,11 +237,11 @@ const InputAndSelect = ({
                   ref={commandRef}
                   shouldFilter={false}
                   className="relative overflow-visible h-full"
+                  label={label}
                >
                   <CommandInput
                      value={value}
                      onValueChange={val => {
-                        console.log("change", val);
                         onChangeHandler(val);
                      }}
                      onKeyDown={handleKeyDown}

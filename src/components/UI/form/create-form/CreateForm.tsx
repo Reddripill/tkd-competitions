@@ -33,6 +33,7 @@ const CreateForm = withForm({
                         return (
                            <field.SelectField
                               isControlledSelect={true}
+                              suggestion={false}
                               selectedValues={value}
                               setSelectedValues={setValue}
                               isMulti={true}

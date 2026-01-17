@@ -1,7 +1,7 @@
 @reference '../../../app/globals.css';
 
 .table {
-   @apply w-full box-border border-separate border-spacing-0 rounded-xl shadow-border mb-6;
+   @apply table-fixed w-full max-w-full overflow-hidden box-border border-separate border-spacing-0 rounded-xl shadow-border mb-6;
 }
 
 .header-row {
@@ -10,7 +10,7 @@
 
 .header-item {
    @apply border border-x-0 border-border-gray first:rounded-tl-xl first:border-l w-auto
-   last:border-r last:rounded-tr-xl pr-4 first:pl-8 last:pr-8 text-start;
+   last:border-r last:rounded-tr-xl pr-6 first:pl-8 last:pr-8 text-start;
    &._specified {
       @apply text-center;
    }
@@ -29,7 +29,7 @@
 
 .data-item {
    @apply border border-x-0 border-t-0 border-border-gray first:border-l
-   last:border-r pr-4 first:pl-8 last:pr-8 text-start;
+   last:border-r pr-6 first:pl-8 last:pr-8 text-start;
    &._specified {
       @apply text-center;
    }

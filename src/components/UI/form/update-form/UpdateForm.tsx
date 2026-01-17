@@ -33,6 +33,7 @@ const UpdateForm = withForm({
                         return (
                            <field.SelectField
                               isControlledInput={true}
+                              suggestion={false}
                               value={field.state.value}
                               isMulti={false}
                               label="Название *"

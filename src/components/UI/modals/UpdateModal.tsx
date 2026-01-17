@@ -99,10 +99,13 @@ const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
                         isPending={isPending}
                      />
                   </div>
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end gap-x-2">
+                     <DialogClose asChild={true}>
+                        <ActionButton btnType="basic">Отмена</ActionButton>
+                     </DialogClose>
                      <DialogClose asChild={true}>
                         <ActionButton btnType="blue" onClick={updateHandler}>
-                           Изменить
+                           Подтвердить
                         </ActionButton>
                      </DialogClose>
                   </div>
