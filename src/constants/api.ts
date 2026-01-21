@@ -1,4 +1,4 @@
-const BASEPATH = "http://localhost:3001";
+const BASEPATH = process.env.NEXT_PUBLIC_API_URL;
 
 export const API = {
    ARENAS: BASEPATH + "/arenas",

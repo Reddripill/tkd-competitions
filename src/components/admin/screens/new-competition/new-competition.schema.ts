@@ -14,3 +14,5 @@ export const newCompetitionSchema = z.object({
       })
    ),
 });
+
+export type CompetitionType = z.infer<typeof newCompetitionSchema>;

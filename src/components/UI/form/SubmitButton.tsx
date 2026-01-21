@@ -18,7 +18,7 @@ const SubmitButton = () => {
                className="rounded-lg text-lg h-12 w-[200px]"
                action={form.handleSubmit}
                disabled={!canSubmit || isPristine || isSubmitting}
-               aria-disabled={!canSubmit || isPristine}
+               aria-disabled={!canSubmit || isPristine || isSubmitting}
             >
                {isSubmitting ? (
                   <div className="flex items-center gap-x-2">

@@ -15,11 +15,17 @@ export interface IBaseEntityWithTitle extends IBaseEntity {
    title: string;
 }
 
-export interface IBaseEntityWithTitleAndCount {
-   data: IBaseEntityWithTitle[];
+export interface IBaseEntityWithTitleAndCount<
+   T extends IBaseEntityWithTitle = IBaseEntityWithTitle
+> {
+   data: T[];
    count: number;
 }
 
 export interface IDeleteMany {
    ids: string[];
+}
+
+export interface ITournament extends IBaseEntityWithTitle {
+   competitions: [];
 }

@@ -3,18 +3,20 @@ import React from "react";
 import MainBlock from "../../MainBlock";
 import { FieldGroup } from "@/components/UI/lib-components/field";
 import { API } from "@/constants/api";
-import { newCompetitionSchema } from "./new-competition.schema";
+import {
+   CompetitionType,
+   newCompetitionSchema,
+} from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { toast } from "sonner";
 import { useAppForm } from "@/contexts/AdminFormContext";
 import AddFieldButton from "@/components/UI/form/AddFieldButton";
 import { useMutation } from "@tanstack/react-query";
-import { ICompetition } from "./new-competition.types";
 
 const NewCompetitionPage = () => {
    const mutation = useMutation({
-      mutationFn: async (body: ICompetition) => {
+      mutationFn: async (body: CompetitionType) => {
          const res = await fetch(API.COMPETITIONS, {
             method: "POST",
             headers: {

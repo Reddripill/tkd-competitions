@@ -1,6 +1,6 @@
-import { ICompetition } from "./new-competition.types";
+import { CompetitionType } from "./new-competition.schema";
 
-export const defaultCompetition: ICompetition = {
+export const defaultCompetition: CompetitionType = {
    tournamentTitle: "",
    arenas: [
       {

@@ -84,10 +84,10 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
             >
                <Command>
                   <CommandList>
-                     <CommandItem className="group w-full transition-colors hover:bg-alt-gray p-3 cursor-pointer">
+                     <CommandItem className="group w-full transition-colors hover:bg-alt-gray cursor-pointer p-0">
                         <button
                            type="button"
-                           className="w-full flex items-center justify-between"
+                           className="w-full h-full p-3 flex items-center justify-between"
                            onClick={clickHandler}
                         >
                            <div className="font-bold text-red-accent group-hover:text-black/80 transition-colors">

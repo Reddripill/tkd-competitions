@@ -4,7 +4,8 @@
    "private": true,
    "scripts": {
       "dev": "next dev",
-      "build": "next build",
+      "build:dev": "cross-env NODE_ENV=development next build",
+      "build:prod": "cross-env NODE_ENV=production next build",
       "start": "next start",
       "lint": "eslint"
    },
@@ -33,9 +34,12 @@
    },
    "devDependencies": {
       "@tailwindcss/postcss": "^4",
+      "@tanstack/react-devtools": "^0.9.2",
+      "@tanstack/react-form-devtools": "^0.2.12",
       "@types/node": "^20",
       "@types/react": "^19",
       "@types/react-dom": "^19",
+      "cross-env": "^10.1.0",
       "eslint": "^9",
       "eslint-config-next": "16.0.4",
       "tailwindcss": "^4",
