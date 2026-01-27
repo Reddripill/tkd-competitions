@@ -23,10 +23,10 @@ const TournamentGrid = ({ items }: IProps) => {
                   <div>
                      {itemCompetitions.length !== 0 ? (
                         <div className={styles["card-grid"]}>
-                           {itemCompetitions.map(competition => (
+                           {itemCompetitions.map(competitions => (
                               <TournamentCard
-                                 key={competition[0].id}
-                                 card={competition}
+                                 key={competitions[0].id}
+                                 competitions={competitions}
                                  tournamentId={item.id}
                               />
                            ))}

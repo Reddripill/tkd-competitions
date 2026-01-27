@@ -7,7 +7,7 @@ import {
    DialogPortal,
    DialogTitle,
 } from "../lib-components/dialog";
-import { ISourceAndKey, SetStateType } from "@/types/main.types";
+import { ISourceAndKey } from "@/types/main.types";
 import ActionButton from "../buttons/ActionButton";
 import { XIcon } from "lucide-react";
 import { useAppForm } from "@/contexts/AdminFormContext";
@@ -15,10 +15,9 @@ import { useGetEntity, useUpdateEntity } from "@/hooks/query";
 import UpdateForm from "../form/update-form/UpdateForm";
 import ConfirmModal from "./ConfirmModal";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
+import { IModalProps } from "@/types/modals.types";
 
-interface IProps extends ISourceAndKey {
-   isOpen: boolean;
-   setIsOpen: SetStateType<boolean>;
+interface IProps extends IModalProps, ISourceAndKey {
    id: string | null;
 }
 

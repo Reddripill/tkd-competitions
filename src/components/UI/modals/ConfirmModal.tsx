@@ -8,20 +8,16 @@ import {
    DialogTitle,
 } from "../lib-components/dialog";
 import ActionButton, { IActionButtonProps } from "../buttons/ActionButton";
-import { SetStateType } from "@/types/main.types";
 import { XIcon } from "lucide-react";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
+import { IModalCustomContent } from "@/types/modals.types";
 
-interface IProps extends Pick<IActionButtonProps, "btnType"> {
-   isOpen: boolean;
-   setIsOpen: SetStateType<boolean>;
+interface IProps
+   extends IModalCustomContent,
+      Pick<IActionButtonProps, "btnType"> {
    children?: React.ReactNode;
    confirmedAction: () => void;
    cancelHandler?: () => void;
-   title: string;
-   description: string;
-   actionBtnText: string;
-   cancelBtnText?: string;
 }
 
 const ConfirmModal = ({

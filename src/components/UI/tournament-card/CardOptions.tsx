@@ -7,28 +7,35 @@ import {
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
+import { IDeleteCompetitionsBody } from "./AdminTournamentGrid";
 
 interface IProps {
-   id: string;
+   tournamentId: string;
    arenaId: string;
 }
 
-const CardOptions = ({ id, arenaId }: IProps) => {
+const CardOptions = ({ tournamentId, arenaId }: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const { setCurrentId, showDeleteModal, showUpdateModal } =
-      useGetModalsContext();
+      useGetModalsContext<IDeleteCompetitionsBody>();
 
    const showDeleteModalHandler = () => {
       setIsOpen(false);
       if (showDeleteModal && setCurrentId) {
-         setCurrentId(arenaId);
+         setCurrentId({
+            arena_id: arenaId,
+            tournament_id: tournamentId,
+         });
          showDeleteModal();
       }
    };
    const showUpdateModalHandler = () => {
       setIsOpen(false);
       if (showUpdateModal && setCurrentId) {
-         setCurrentId(arenaId);
+         setCurrentId({
+            arena_id: arenaId,
+            tournament_id: tournamentId,
+         });
          showUpdateModal();
       }
    };

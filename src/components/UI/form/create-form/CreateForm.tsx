@@ -6,7 +6,7 @@ import { defaultCreationData } from "./create-form.constants";
 interface IProps extends ISourceAndKey {
    value: string[];
    setValue: SetStateType<string[]>;
-   isPending?: boolean;
+   isAdding?: boolean;
 }
 
 const CreateForm = withForm({
@@ -16,8 +16,16 @@ const CreateForm = withForm({
       queryKey: "",
       value: [],
       setValue: () => {},
+      isAdding: false,
    } as IProps,
-   render: function Render({ form, source, queryKey, value, setValue }) {
+   render: function Render({
+      form,
+      source,
+      queryKey,
+      value,
+      setValue,
+      isAdding,
+   }) {
       return (
          <div>
             <div>
@@ -33,7 +41,7 @@ const CreateForm = withForm({
                         return (
                            <field.SelectField
                               isControlledSelect={true}
-                              suggestion={false}
+                              suggestion={isAdding}
                               selectedValues={value}
                               setSelectedValues={setValue}
                               isMulti={true}

@@ -1,27 +1,31 @@
 import { SetStateType } from "@/types/main.types";
 import React, { createContext, useContext } from "react";
 
-export interface IModalsContext {
+export interface IModalsContext<T = string> {
    showDeleteModal?: () => void;
    showUpdateModal?: () => void;
    showCreateModal?: () => void;
-   setCurrentId?: SetStateType<string | null>;
+   setCurrentId?: SetStateType<T>;
 }
 
-export const ModalsContext = createContext<IModalsContext>({});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const ModalsContext = createContext<IModalsContext<any>>({});
 
-interface IModalsProviderProps {
+interface IModalsProviderProps<T> {
    children: React.ReactNode;
-   value: IModalsContext;
+   value: IModalsContext<T>;
 }
 
-export const ModalsProvider = ({ children, value }: IModalsProviderProps) => {
+export function ModalsProvider<T>({
+   children,
+   value,
+}: IModalsProviderProps<T>) {
    return (
       <ModalsContext.Provider value={value}>{children}</ModalsContext.Provider>
    );
-};
+}
 
-export const useGetModalsContext = () => {
-   const modalsContext = useContext(ModalsContext);
+export function useGetModalsContext<T>() {
+   const modalsContext = useContext(ModalsContext) as IModalsContext<T>;
    return modalsContext;
-};
+}

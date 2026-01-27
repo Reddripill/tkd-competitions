@@ -7,7 +7,7 @@ import {
    DialogPortal,
    DialogTitle,
 } from "../lib-components/dialog";
-import { ISourceAndKey, SetStateType } from "@/types/main.types";
+import { ISourceAndKey } from "@/types/main.types";
 import ActionButton from "../buttons/ActionButton";
 import CreateForm from "../form/create-form/CreateForm";
 import { XIcon } from "lucide-react";
@@ -16,13 +16,23 @@ import { defaultCreationData } from "../form/create-form/create-form.constants";
 import { useAddEntity } from "@/hooks/query";
 import ConfirmModal from "./ConfirmModal";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
+import { IModalOptionalContent } from "@/types/modals.types";
 
-interface IProps extends ISourceAndKey {
-   isOpen: boolean;
-   setIsOpen: SetStateType<boolean>;
+interface IProps extends ISourceAndKey, IModalOptionalContent {
+   isAdding?: boolean;
 }
 
-const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
+const CreateModal = ({
+   isOpen,
+   setIsOpen,
+   source,
+   queryKey,
+   isAdding = false,
+   title,
+   actionBtnText,
+   cancelBtnText,
+   description,
+}: IProps) => {
    const { setCurrentId } = useGetModalsContext();
    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
    const [selectedValues, setSelectedValues] = useState<string[]>([]);
@@ -100,10 +110,12 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                   }}
                >
                   <DialogTitle className="text-xl font-bold">
-                     Создание записей
+                     {title ? title : "Создание записей"}
                   </DialogTitle>
                   <DialogDescription>
-                     Добавление только уникальных записей
+                     {description
+                        ? description
+                        : "Добавление только уникальных записейs"}
                   </DialogDescription>
                   <div className="text-md mb-4">
                      <CreateForm
@@ -112,6 +124,7 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                         queryKey={queryKey}
                         value={selectedValues}
                         setValue={setSelectedValues}
+                        isAdding={isAdding}
                      />
                   </div>
                   <div className="flex items-center justify-end gap-x-2">
@@ -120,12 +133,12 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                            btnType="basic"
                            onClick={closeCurrentModal}
                         >
-                           Отмена
+                           {cancelBtnText ? cancelBtnText : "Отмена"}
                         </ActionButton>
                      </DialogClose>
                      <DialogClose asChild={true}>
                         <ActionButton btnType="blue" onClick={createHandler}>
-                           Создать
+                           {actionBtnText ? actionBtnText : "Создать"}
                         </ActionButton>
                      </DialogClose>
                   </div>
