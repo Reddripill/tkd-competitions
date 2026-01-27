@@ -14,20 +14,22 @@ import { useAppForm } from "@/contexts/AdminFormContext";
 import { useGetEntity, useUpdateEntity } from "@/hooks/query";
 import UpdateForm from "../form/update-form/UpdateForm";
 import ConfirmModal from "./ConfirmModal";
+import { useGetModalsContext } from "@/contexts/ModalsContext";
 
 interface IProps extends ISourceAndKey {
    isOpen: boolean;
    setIsOpen: SetStateType<boolean>;
-   id: string;
+   id: string | null;
 }
 
 const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
+   const { setCurrentId } = useGetModalsContext();
    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
    const { data, isPending } = useGetEntity({
       queryKey,
       source,
       id,
-      enabled: !!isOpen,
+      enabled: !!isOpen && !!id,
    });
 
    const { mutate } = useUpdateEntity({ queryKey, source, id });
@@ -43,6 +45,19 @@ const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
       setIsConfirmModalOpen(true);
    };
 
+   const closeCurrentModal = (
+      e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+   ) => {
+      if (data && data.title !== form.state.values.title) {
+         e.preventDefault();
+         showConfirmHandler();
+      } else {
+         if (setCurrentId) {
+            setCurrentId(null);
+         }
+      }
+   };
+
    const cancelHandler = () => {
       setIsOpen(true);
       setIsConfirmModalOpen(false);
@@ -56,7 +71,10 @@ const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
 
    const updateHandler = () => {
       const fieldValue = form.state.values.title;
-      if (data) {
+      if (data && id) {
+         if (setCurrentId) {
+            setCurrentId(null);
+         }
          if (data.title !== fieldValue) {
             mutate(fieldValue);
          }
@@ -101,7 +119,12 @@ const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
                   </div>
                   <div className="flex items-center justify-end gap-x-2">
                      <DialogClose asChild={true}>
-                        <ActionButton btnType="basic">Отмена</ActionButton>
+                        <ActionButton
+                           btnType="basic"
+                           onClick={closeCurrentModal}
+                        >
+                           Отмена
+                        </ActionButton>
                      </DialogClose>
                      <DialogClose asChild={true}>
                         <ActionButton btnType="blue" onClick={updateHandler}>
@@ -112,12 +135,7 @@ const UpdateModal = ({ isOpen, setIsOpen, source, queryKey, id }: IProps) => {
                   <DialogClose
                      className="ring-offset-background absolute top-4 right-4 rounded-xs opacity-70 transition-opacity size-5 cursor-pointer"
                      asChild={true}
-                     onClick={e => {
-                        if (data && data.title !== form.state.values.title) {
-                           e.preventDefault();
-                           showConfirmHandler();
-                        }
-                     }}
+                     onClick={closeCurrentModal}
                   >
                      <XIcon />
                   </DialogClose>

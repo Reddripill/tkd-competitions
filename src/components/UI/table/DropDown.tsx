@@ -22,6 +22,7 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
    const [isModalOpen, setIsModalOpen] = useState(false);
    const mutation = useMutation({
       mutationFn: async (body: IDeleteMany) => {
+         console.log(body);
          const res = await fetch(source, {
             method: "DELETE",
             headers: {

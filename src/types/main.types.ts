@@ -25,7 +25,3 @@ export interface IBaseEntityWithTitleAndCount<
 export interface IDeleteMany {
    ids: string[];
 }
-
-export interface ITournament extends IBaseEntityWithTitle {
-   competitions: [];
-}

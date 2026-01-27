@@ -25,7 +25,7 @@ export default function RootLayout({
             <QueryProvider>
                <Toaster position="top-center" expand={true} richColors={true} />
                {children}
-               <TanstackProvider />
+               {/* <TanstackProvider /> */}
             </QueryProvider>
          </body>
       </html>

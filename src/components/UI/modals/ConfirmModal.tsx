@@ -10,6 +10,7 @@ import {
 import ActionButton, { IActionButtonProps } from "../buttons/ActionButton";
 import { SetStateType } from "@/types/main.types";
 import { XIcon } from "lucide-react";
+import { useGetModalsContext } from "@/contexts/ModalsContext";
 
 interface IProps extends Pick<IActionButtonProps, "btnType"> {
    isOpen: boolean;
@@ -35,6 +36,7 @@ const ConfirmModal = ({
    cancelBtnText,
    btnType,
 }: IProps) => {
+   const { setCurrentId } = useGetModalsContext();
    const closeConfirmModal = (
       e: React.MouseEvent<HTMLButtonElement, MouseEvent>
    ) => {
@@ -43,6 +45,15 @@ const ConfirmModal = ({
          cancelHandler();
       } else {
          setIsOpen(false);
+      }
+      if (setCurrentId) {
+         setCurrentId(null);
+      }
+   };
+   const confirmHanlder = () => {
+      confirmedAction();
+      if (setCurrentId) {
+         setCurrentId(null);
       }
    };
    return (
@@ -71,7 +82,7 @@ const ConfirmModal = ({
                            {cancelBtnText ? cancelBtnText : "Отмена"}
                         </ActionButton>
                      </DialogClose>
-                     <DialogClose asChild={true} onClick={confirmedAction}>
+                     <DialogClose asChild={true} onClick={confirmHanlder}>
                         <ActionButton btnType={btnType}>
                            {actionBtnText}
                         </ActionButton>

@@ -37,9 +37,6 @@ const NewCompetitionPage = () => {
 
       onSuccess: () => {
          toast.success("Соревнования успешно созданы");
-         /* queryClient.invalidateQueries({
-            queryKey: [queryKey],
-         }); */
       },
 
       onError: () => {
@@ -97,7 +94,8 @@ const NewCompetitionPage = () => {
                                           <field.SelectField
                                              isMulti={false}
                                              label="Название арены *"
-                                             source={API.CATEGORIES}
+                                             source={API.ARENAS}
+                                             queryKey={QUERY_KEYS.ARENAS}
                                           />
                                        </div>
                                     )}

@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface IEntityWithId extends ISourceAndKey {
-   id: string;
+   id: string | null;
 }
 
 interface IEnabledEntityWithId extends IEntityWithId {
@@ -45,6 +45,37 @@ export const useAddEntity = ({ queryKey, source }: ISourceAndKey) => {
    return mutation;
 };
 
+export const useDeleteEntity = ({ queryKey, source }: ISourceAndKey) => {
+   const mutation = useMutation({
+      mutationFn: async (id: string) => {
+         const res = await fetch(`${source}/${id}`, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+         });
+
+         if (!res.ok) {
+            toast.error("Ошибка при удалении");
+         }
+
+         return res.json();
+      },
+
+      onSuccess: () => {
+         toast.success("Запись успешно удалена");
+         queryClient.invalidateQueries({
+            queryKey: [queryKey],
+         });
+      },
+
+      onError: () => {
+         toast.error("Ошибка при удалении");
+      },
+   });
+   return mutation;
+};
+
 export const useGetEntity = ({
    queryKey,
    source,
@@ -58,7 +89,7 @@ export const useGetEntity = ({
          const result = await data.json();
          return result;
       },
-      enabled,
+      enabled: !!enabled && !!id,
    });
    return query;
 };

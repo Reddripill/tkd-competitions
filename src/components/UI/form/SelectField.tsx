@@ -5,7 +5,9 @@ import InputAndSelect, { ISelectProps } from "../InputAndSelect";
 const SelectField = (props: ISelectProps) => {
    const field = useFieldContext<string | string[]>();
 
-   const isValid = field.state.meta.isValid || !field.state.meta.isTouched;
+   const fieldMeta = field.state.meta;
+
+   const isValid = fieldMeta.isValid || !fieldMeta.isBlurred;
 
    const changeHandler = (value: string) => {
       if (Array.isArray(field.state.value)) {
@@ -35,7 +37,7 @@ const SelectField = (props: ISelectProps) => {
          blurHandler={blurHandler}
          unselectHandler={unselectHandler}
          validation={true}
-         errorMessage={field.state.meta.errors[0]?.message}
+         errorMessage={fieldMeta.errors[0]?.message}
          {...props}
       />
    );

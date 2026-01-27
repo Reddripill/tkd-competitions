@@ -1,0 +1,6 @@
+@reference '../../../app/globals.css';
+
+.card-grid {
+   @apply grid gap-4;
+   grid-template-columns: repeat(auto-fit, minmax(200px, 300px));
+}

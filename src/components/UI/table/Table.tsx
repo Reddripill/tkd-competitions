@@ -28,7 +28,7 @@ import ActionButton from "../buttons/ActionButton";
 import DeleteAction from "./DeleteAction";
 import UpdateAction from "./UpdateAction";
 import NotSearched from "./NotSearched";
-import NotExist from "./NotExist";
+import NotExist from "../NotExist";
 
 const columnHelper = createColumnHelper<IBaseEntityWithTitle>();
 

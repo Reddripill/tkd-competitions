@@ -15,6 +15,7 @@ import { useAppForm } from "@/contexts/AdminFormContext";
 import { defaultCreationData } from "../form/create-form/create-form.constants";
 import { useAddEntity } from "@/hooks/query";
 import ConfirmModal from "./ConfirmModal";
+import { useGetModalsContext } from "@/contexts/ModalsContext";
 
 interface IProps extends ISourceAndKey {
    isOpen: boolean;
@@ -22,6 +23,7 @@ interface IProps extends ISourceAndKey {
 }
 
 const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
+   const { setCurrentId } = useGetModalsContext();
    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
    const [selectedValues, setSelectedValues] = useState<string[]>([]);
    const { mutate: createEntities } = useAddEntity({ queryKey, source });
@@ -36,6 +38,9 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
 
    const createHandler = () => {
       if (selectedValues.length > 0) {
+         if (setCurrentId) {
+            setCurrentId(null);
+         }
          createEntities(selectedValues);
          resetForm();
       }
@@ -44,6 +49,19 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
    const showConfirmHandler = () => {
       setIsOpen(false);
       setIsConfirmModalOpen(true);
+   };
+
+   const closeCurrentModal = (
+      e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+   ) => {
+      if (selectedValues.length > 0) {
+         e.preventDefault();
+         showConfirmHandler();
+      } else {
+         if (setCurrentId) {
+            setCurrentId(null);
+         }
+      }
    };
 
    const cancelHandler = () => {
@@ -100,12 +118,7 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                      <DialogClose asChild={true}>
                         <ActionButton
                            btnType="basic"
-                           onClick={e => {
-                              if (selectedValues.length > 0) {
-                                 e.preventDefault();
-                                 showConfirmHandler();
-                              }
-                           }}
+                           onClick={closeCurrentModal}
                         >
                            Отмена
                         </ActionButton>
@@ -119,12 +132,7 @@ const CreateModal = ({ isOpen, setIsOpen, source, queryKey }: IProps) => {
                   <DialogClose
                      className="ring-offset-background absolute top-4 right-4 rounded-xs opacity-70 transition-opacity size-5 cursor-pointer"
                      asChild={true}
-                     onClick={e => {
-                        if (selectedValues.length > 0) {
-                           e.preventDefault();
-                           showConfirmHandler();
-                        }
-                     }}
+                     onClick={closeCurrentModal}
                   >
                      <XIcon />
                   </DialogClose>
