@@ -5,5 +5,7 @@ export const API = {
    CATEGORIES: BASEPATH + "/categories",
    DISCIPLINES: BASEPATH + "/disciplines",
    COMPETITIONS: BASEPATH + "/competitions",
+   REORDER_COMPETITIONS: BASEPATH + "/competitions/reorder",
+   MOVE_COMPETITIONS: BASEPATH + "/competitions/move",
    TOURNAMENTS: BASEPATH + "/tournaments",
 } as const;

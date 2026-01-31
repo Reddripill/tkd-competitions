@@ -8,6 +8,8 @@ export interface ICompetition extends IBaseEntity {
    discipline: IBaseEntityWithTitle | null;
    arena: IBaseEntityWithTitle;
    categories: ICompetitionCategory[];
+   order: number;
+   isFinished: boolean;
 }
 
 export interface ITournament extends IBaseEntityWithTitle {

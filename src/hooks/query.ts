@@ -1,9 +1,5 @@
 import { queryClient } from "@/providers/QueryProvider";
-import {
-   IBaseEntityWithTitle,
-   IDeleteMany,
-   ISourceAndKey,
-} from "@/types/main.types";
+import { IBaseEntityWithTitle, ISourceAndKey } from "@/types/main.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 

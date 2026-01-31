@@ -3,16 +3,25 @@ import { ICompetition } from "@/types/entities.types";
 import ActionButton from "../buttons/ActionButton";
 import CardOptions from "./CardOptions";
 import { Checkbox } from "../lib-components/checkbox";
-import { EllipsisVertical } from "lucide-react";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
 import { IDeleteCompetitionsBody } from "./AdminTournamentGrid";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { cn } from "@/lib/utils";
 
 interface IProps {
    competitions: ICompetition[];
    tournamentId: string;
+   isAdmin?: boolean;
+   isOver?: boolean;
 }
 
-const TournamentCard = ({ competitions, tournamentId }: IProps) => {
+const TournamentCard = ({
+   competitions,
+   tournamentId,
+   isAdmin = false,
+   isOver = false,
+}: IProps) => {
    const { showCreateModal, setCurrentId } =
       useGetModalsContext<IDeleteCompetitionsBody>();
    const disciplineCount = competitions.filter(
@@ -28,7 +37,11 @@ const TournamentCard = ({ competitions, tournamentId }: IProps) => {
       }
    };
    return (
-      <div className="bg-light-gray rounded-xl min-h-40 shadow-border">
+      <div
+         className={cn("bg-light-gray rounded-xl min-h-40 shadow-border", {
+            "bg-light-gray/60": isOver,
+         })}
+      >
          <div className="flex flex-col h-full text-black py-4 px-2">
             <div className="flex items-center justify-between mb-4">
                <div className="font-medium pl-2">
@@ -43,35 +56,23 @@ const TournamentCard = ({ competitions, tournamentId }: IProps) => {
                <div className="grow">
                   {disciplineCount > 0 && (
                      <div className="flex flex-col gap-y-2 mb-6">
-                        {competitions.map(item => {
-                           if (!item.discipline) return null;
-                           return (
-                              <div
-                                 key={item.id}
-                                 className="flex items-center gap-x-3 bg-white rounded-xl shadow-light p-2 text-sm"
-                              >
-                                 <div className="flex items-center justify-center">
-                                    <Checkbox className="size-4" />
+                        {competitions.map(item => (
+                           <React.Fragment key={item.id}>
+                              {isAdmin ? (
+                                 <>
+                                    <AdminTournamentItem
+                                       item={item}
+                                       arenaId={competitions[0].arena.id}
+                                       tournamentId={tournamentId}
+                                    />
+                                 </>
+                              ) : (
+                                 <div className="p-2 text-sm">
+                                    <TournamentItem item={item} />
                                  </div>
-                                 <div className="grow">
-                                    {item.discipline.title}
-                                    {item.categories.length > 0 && (
-                                       <span>
-                                          {" "}
-                                          (
-                                          {item.categories
-                                             .map(item => item.category.title)
-                                             .join(", ")}
-                                          )
-                                       </span>
-                                    )}
-                                 </div>
-                                 <button type="button">
-                                    <EllipsisVertical size={18} />
-                                 </button>
-                              </div>
-                           );
-                        })}
+                              )}
+                           </React.Fragment>
+                        ))}
                      </div>
                   )}
                </div>
@@ -82,6 +83,72 @@ const TournamentCard = ({ competitions, tournamentId }: IProps) => {
                   />
                </div>
             </div>
+         </div>
+      </div>
+   );
+};
+
+export const TournamentItem = ({ item }: { item: ICompetition }) => {
+   if (!item.discipline) return null;
+   return (
+      <div>
+         {item.discipline.title}
+         {item.categories.length > 0 && (
+            <span>
+               {" "}
+               ({item.categories.map(item => item.category.title).join(", ")})
+            </span>
+         )}
+      </div>
+   );
+};
+
+const AdminTournamentItem = ({
+   item,
+   tournamentId,
+   arenaId,
+}: {
+   item: ICompetition;
+   tournamentId: string;
+   arenaId: string;
+}) => {
+   const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      setActivatorNodeRef,
+      isDragging,
+   } = useSortable({ id: item.id });
+   const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+   };
+   if (!item.discipline) return null;
+   return (
+      <div ref={setNodeRef} style={style} {...attributes}>
+         <div
+            className={cn(
+               "flex items-center gap-x-3 bg-white rounded-xl shadow-light p-2 text-sm",
+               { "opacity-50": isDragging }
+            )}
+         >
+            <div className="flex items-center justify-center">
+               <Checkbox className="size-4" />
+            </div>
+            <div
+               className="grow cursor-grab"
+               ref={setActivatorNodeRef}
+               {...listeners}
+            >
+               <TournamentItem item={item} />
+            </div>
+            <CardOptions
+               tournamentId={tournamentId}
+               arenaId={arenaId}
+               isVertical={true}
+            />
          </div>
       </div>
    );

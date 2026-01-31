@@ -4,7 +4,7 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "../lib-components/popover";
-import { Ellipsis, Pen, Trash } from "lucide-react";
+import { Ellipsis, EllipsisVertical, Pen, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
 import { IDeleteCompetitionsBody } from "./AdminTournamentGrid";
@@ -12,9 +12,10 @@ import { IDeleteCompetitionsBody } from "./AdminTournamentGrid";
 interface IProps {
    tournamentId: string;
    arenaId: string;
+   isVertical?: boolean;
 }
 
-const CardOptions = ({ tournamentId, arenaId }: IProps) => {
+const CardOptions = ({ tournamentId, arenaId, isVertical = false }: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const { setCurrentId, showDeleteModal, showUpdateModal } =
       useGetModalsContext<IDeleteCompetitionsBody>();
@@ -43,7 +44,11 @@ const CardOptions = ({ tournamentId, arenaId }: IProps) => {
       <div className="relative">
          <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild={true}>
-               <Ellipsis className="cursor-pointer" />
+               {isVertical ? (
+                  <EllipsisVertical size={18} className="cursor-pointer" />
+               ) : (
+                  <Ellipsis className="cursor-pointer" />
+               )}
             </PopoverTrigger>
             <PopoverContent
                align="end"

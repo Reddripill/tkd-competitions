@@ -7,17 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API } from "@/constants/api";
 import { ITournament } from "@/types/entities.types";
-import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 import { Spinner } from "@/components/UI/lib-components/spinner";
 import NotExist from "@/components/UI/NotExist";
 import AdminTournamentGrid from "@/components/UI/tournament-card/AdminTournamentGrid";
 
 const HomePage = () => {
-   const {
-      data: response,
-      isPending,
-      isError,
-   } = useQuery<IBaseEntityWithTitleAndCount<ITournament>>({
+   const { data, isPending, isError } = useQuery<ITournament[]>({
       queryKey: [QUERY_KEYS.TOURNAMENTS],
       queryFn: async () => {
          const data = await fetch(API.TOURNAMENTS);
@@ -37,9 +32,9 @@ const HomePage = () => {
          subTitle="Наглядное представление всех соревнований и мест их проведения"
          actions={<AddingButton link={ROUTES.NEW_COMPETITION} />}
       >
-         {response && response.count !== 0 ? (
+         {data && data.length !== 0 ? (
             <div>
-               <AdminTournamentGrid items={response.data} />
+               <AdminTournamentGrid items={data} />
             </div>
          ) : (
             <NotExist />
