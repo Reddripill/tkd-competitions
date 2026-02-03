@@ -1,5 +1,3 @@
-import { ICompetition } from "./entities.types";
-
 export type SetStateType<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export interface ISourceAndKey {
@@ -26,15 +24,4 @@ export interface IBaseEntityWithTitleAndCount<
 
 export interface IDeleteMany {
    ids: string[];
-}
-
-export interface IReorderCompetitionBody {
-   id: string;
-   order: number;
-   tournamentId: string;
-}
-
-export interface IReorderCompetition extends IReorderCompetitionBody {
-   arenaId: string;
-   competitions: ICompetition[];
 }

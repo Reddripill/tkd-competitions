@@ -1,8 +1,8 @@
 import React from "react";
 import { ICompetition } from "@/types/entities.types";
 import { EllipsisVertical } from "lucide-react";
-import { TournamentItem } from "./TournamentCard";
 import { Checkbox } from "../lib-components/checkbox";
+import { CardItem } from "./TournamentCard";
 
 interface IProps {
    item: ICompetition;
@@ -15,7 +15,7 @@ const CardOverlay = ({ item }: IProps) => {
             <Checkbox className="size-4" />
          </div>
          <div className="grow">
-            <TournamentItem item={item} />
+            <CardItem item={item} />
          </div>
          <EllipsisVertical size={18} />
       </div>

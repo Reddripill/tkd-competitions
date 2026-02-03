@@ -10,9 +10,14 @@ import { ITournament } from "@/types/entities.types";
 import { Spinner } from "@/components/UI/lib-components/spinner";
 import NotExist from "@/components/UI/NotExist";
 import AdminTournamentGrid from "@/components/UI/tournament-card/AdminTournamentGrid";
+import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 
 const HomePage = () => {
-   const { data, isPending, isError } = useQuery<ITournament[]>({
+   const {
+      data: response,
+      isPending,
+      isError,
+   } = useQuery<IBaseEntityWithTitleAndCount<ITournament>>({
       queryKey: [QUERY_KEYS.TOURNAMENTS],
       queryFn: async () => {
          const data = await fetch(API.TOURNAMENTS);
@@ -32,9 +37,9 @@ const HomePage = () => {
          subTitle="Наглядное представление всех соревнований и мест их проведения"
          actions={<AddingButton link={ROUTES.NEW_COMPETITION} />}
       >
-         {data && data.length !== 0 ? (
+         {response && response.count !== 0 ? (
             <div>
-               <AdminTournamentGrid items={data} />
+               <AdminTournamentGrid tournaments={response.data} />
             </div>
          ) : (
             <NotExist />
