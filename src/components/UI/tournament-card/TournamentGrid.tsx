@@ -45,22 +45,3 @@ const TournamentGrid = ({ tournaments, isAdmin = false }: IProps) => {
 };
 
 export default TournamentGrid;
-
-// items={tournament.competitions.map(comp => comp.id)}
-
-/* const AdminTournamentGridContent = (props: IInnerProps) => {
-   const defaultId = useId();
-   const isEmpyCompetitions = props.competitionsByArena.length === 0;
-   const { setNodeRef, isOver } = useDroppable({
-      id: isEmpyCompetitions
-         ? defaultId
-         : `${props.tournament.id}:${props.competitionsByArena[0].id}`,
-      disabled: isEmpyCompetitions,
-   });
-   return (
-      <div ref={setNodeRef}>
-         <TournamentGridContent isOver={isOver} {...props} />
-      </div>
-   );
-};
- */

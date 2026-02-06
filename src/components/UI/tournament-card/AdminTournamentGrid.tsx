@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ICompetition, ITournament } from "@/types/entities.types";
+import { ITournament } from "@/types/entities.types";
 import TournamentGrid from "./TournamentGrid";
 import ConfirmModal from "../modals/ConfirmModal";
 import UpdateModal from "../modals/UpdateModal";
@@ -16,17 +16,19 @@ import {
    DragEndEvent,
    DragOverEvent,
    DragOverlay,
+   DragStartEvent,
    PointerSensor,
    useSensor,
    useSensors,
 } from "@dnd-kit/core";
 import CardOverlay from "./CardOverlay";
 import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
-import { arrayMove, SortableData } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
-   IReorderCompetition,
    IReorderCompetitionBody,
+   SortableItemDataType,
 } from "@/types/dnd.types";
+import { createPortal } from "react-dom";
 
 interface IProps {
    tournaments: ITournament[];
@@ -41,9 +43,8 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
    const [currentId, setCurrentId] = useState<IDeleteCompetitionsBody | null>(
       null
    );
-   const [prevTournaments, setPrevTournaments] = useState<ITournament[] | null>(
-      null
-   );
+   const [prevTournaments, setPrevTournaments] =
+      useState<IBaseEntityWithTitleAndCount<ITournament> | null>(null);
    const [activeDragId, setActiveDragId] = useState<string | null>(null);
    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -131,51 +132,39 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
 
    const overlayItem = activeDragId ? getOverlayItem() : null;
 
-   const findCompetition = (id: string): IReorderCompetition | null => {
-      const formattedCompetitions = tournaments.flatMap(tournament =>
-         tournament.competitions.map(competition => {
-            const currentCompetitions = tournament.competitions.filter(
-               comp => comp.arena.id === competition.arena.id
-            );
-            return {
-               id: competition.id,
-               tournamentId: tournament.id,
-               order: competition.order,
-               arenaId: competition.arena.id,
-               competitions: currentCompetitions,
-            };
-         })
-      );
-      const currentCompetiton = formattedCompetitions.find(
-         item => item.id === id
-      );
-      if (!currentCompetiton) {
-         return null;
+   const dragStartHandler = async (event: DragStartEvent) => {
+      setActiveDragId(event.active.id.toString());
+      await queryClient.cancelQueries({
+         queryKey: [QUERY_KEYS.TOURNAMENTS],
+      });
+      if (!prevTournaments) {
+         const prevState = queryClient.getQueryData<
+            IBaseEntityWithTitleAndCount<ITournament>
+         >([QUERY_KEYS.TOURNAMENTS]);
+         if (prevState) {
+            setPrevTournaments(prevState);
+         }
       }
-      return currentCompetiton;
    };
 
    const dragEndHandler = (event: DragEndEvent) => {
       setActiveDragId(null);
-      const { active, over } = event;
-      if (over === null) return;
-      const activeCompetition = findCompetition(active.id.toString());
-      const overCompetition = findCompetition(over.id.toString());
+      const { active } = event;
 
-      if (!activeCompetition || !overCompetition) return;
+      const activeCompetition = active.data.current as SortableItemDataType;
 
-      if (activeCompetition.arenaId === overCompetition.arenaId) {
-         const sortedCompetitions = activeCompetition.competitions
-            .sort((a, b) => a.order - b.order)
-            .map(item => item.id);
-         const newCompetitionsArr = arrayMove(
-            sortedCompetitions,
-            activeCompetition.order - 1,
-            overCompetition.order - 1
-         );
+      if (!prevTournaments) return;
+
+      const prevTournament = prevTournaments.data.find(tournmanent =>
+         tournmanent.competitions.map(comp => comp.id === active.id)
+      );
+
+      if (!prevTournament) return;
+
+      if (activeCompetition.tournamentId === prevTournament.id) {
          const competitionsBody: IReorderCompetitionBody[] =
-            newCompetitionsArr.map((item, index) => ({
-               id: item,
+            activeCompetition.sortable.items.map((item, index) => ({
+               id: item.toString(),
                tournamentId: activeCompetition.tournamentId,
                order: index + 1,
             }));
@@ -183,39 +172,23 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
       }
    };
 
-   const dragOverHandler = async (event: DragOverEvent) => {
-      await queryClient.cancelQueries({
-         queryKey: [QUERY_KEYS.TOURNAMENTS],
-      });
-      if (!prevTournaments) {
-         const prevState = queryClient.getQueryData<ITournament[]>([
-            QUERY_KEYS.TOURNAMENTS,
-         ]);
-         if (prevState) {
-            setPrevTournaments(prevState);
-         }
-      }
+   const dragOverHandler = (event: DragOverEvent) => {
       const { active, over } = event;
 
-      if (over === null) return;
+      if (!over?.data.current || active.id === over.id) return;
 
-      const activeCompetition = findCompetition(active.id.toString());
-      const overCompetition = findCompetition(over.id.toString());
-
-      if (!activeCompetition || !overCompetition) return;
+      const activeCompetition = active.data.current as SortableItemDataType;
+      const overCompetition = over.data.current as SortableItemDataType;
 
       if (activeCompetition.arenaId === overCompetition.arenaId) {
-         const sortedCompetitions = activeCompetition.competitions
-            .sort((a, b) => a.order - b.order)
-            .map(item => item.id);
          const newCompetitionsArr = arrayMove(
-            sortedCompetitions,
-            activeCompetition.order - 1,
-            overCompetition.order - 1
+            activeCompetition.sortable.items,
+            activeCompetition.sortable.index,
+            overCompetition.sortable.index
          );
          const competitionsBody: IReorderCompetitionBody[] =
             newCompetitionsArr.map((item, index) => ({
-               id: item,
+               id: item.toString(),
                tournamentId: activeCompetition.tournamentId,
                order: index + 1,
             }));
@@ -223,43 +196,29 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          queryClient.setQueryData(
             [QUERY_KEYS.TOURNAMENTS],
             (old: IBaseEntityWithTitleAndCount<ITournament>) => {
-               const oldData = old.data;
-               const newOrderMap = new Map<string, number>();
-               competitionsBody.forEach(item => {
-                  newOrderMap.set(item.id, item.order);
-               });
-
-               const updatedTournaments = oldData.map(tournament => {
-                  const tournamentCompetitions = competitionsBody.filter(
-                     comp => comp.tournamentId === tournament.id
-                  );
-
-                  if (tournamentCompetitions.length === 0) {
-                     return tournament;
-                  }
-
-                  const updatedCompetitionsList = tournament.competitions
-                     .map(competition => {
-                        const newOrder = newOrderMap.get(competition.id);
-                        if (newOrder !== undefined) {
-                           return {
-                              ...competition,
-                              order: newOrder,
-                           };
-                        }
-                        return competition;
-                     })
-                     .sort((a, b) => a.order - b.order);
-
-                  return {
-                     ...tournament,
-                     competitions: updatedCompetitionsList,
-                  };
-               });
+               if (!old) return old;
 
                return {
-                  data: updatedTournaments,
-                  count: updatedTournaments.length,
+                  ...old,
+
+                  data: old.data.map(tournament => {
+                     return {
+                        ...tournament,
+
+                        competitions: tournament.competitions.map(comp => {
+                           const updated = competitionsBody.find(
+                              b => b.id === comp.id
+                           );
+
+                           if (!updated) return comp;
+
+                           return {
+                              ...comp,
+                              order: updated.order,
+                           };
+                        }),
+                     };
+                  }),
                };
             }
          );
@@ -270,7 +229,7 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
       <DndContext
          collisionDetection={closestCenter}
          sensors={sensors}
-         onDragStart={e => setActiveDragId(e.active.id.toString())}
+         onDragStart={dragStartHandler}
          onDragEnd={dragEndHandler}
          onDragOver={dragOverHandler}
       >
@@ -310,11 +269,14 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             />
             <TournamentGrid tournaments={tournaments} isAdmin={true} />
          </ModalsProvider>
-         <DragOverlay>
-            {activeDragId && overlayItem ? (
-               <CardOverlay item={overlayItem} />
-            ) : null}
-         </DragOverlay>
+         {createPortal(
+            <DragOverlay>
+               {activeDragId && overlayItem ? (
+                  <CardOverlay item={overlayItem} />
+               ) : null}
+            </DragOverlay>,
+            document.body
+         )}
       </DndContext>
    );
 };

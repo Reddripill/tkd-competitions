@@ -7,16 +7,14 @@ export interface IReorderCompetitionBody {
    tournamentId: string;
 }
 
-export interface ICompetitionInfo {
+export type CompetitionInfoType = {
    arenaId: string;
    tournamentId: string;
-}
+};
 
-export interface IReorderCompetition extends ICompetitionInfo {
+export type ReorderCompetitionType = CompetitionInfoType & {
    competitions: ICompetition[];
    order: number;
-}
+};
 
-export interface ISortableItemData extends ICompetitionInfo {
-   sortable: SortableData;
-}
+export type SortableItemDataType = CompetitionInfoType & SortableData;

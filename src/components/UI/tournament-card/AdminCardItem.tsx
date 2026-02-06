@@ -27,12 +27,14 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
       transform: CSS.Transform.toString(transform),
       transition,
    };
+
    if (!item.discipline) return null;
+
    return (
       <div ref={setNodeRef} style={style} {...attributes}>
          <div
             className={cn(
-               "flex items-center gap-x-3 bg-white rounded-xl shadow-light p-2 text-sm",
+               "flex items-center gap-x-3 bg-white rounded-xl shadow-light p-2 text-sm min-h-10",
                { "opacity-50": isDragging }
             )}
          >
@@ -46,11 +48,13 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
             >
                <CardItem item={item} />
             </div>
-            <CardOptions
-               tournamentId={tournamentId}
-               arenaId={arenaId}
-               isVertical={true}
-            />
+            <div className="shrink-0">
+               <CardOptions
+                  tournamentId={tournamentId}
+                  arenaId={arenaId}
+                  isVertical={true}
+               />
+            </div>
          </div>
       </div>
    );
