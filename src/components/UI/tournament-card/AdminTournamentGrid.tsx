@@ -24,11 +24,9 @@ import {
 import CardOverlay from "./CardOverlay";
 import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 import { arrayMove } from "@dnd-kit/sortable";
-import {
-   IReorderCompetitionBody,
-   SortableItemDataType,
-} from "@/types/dnd.types";
+import { SortableItemDataType } from "@/types/dnd.types";
 import { createPortal } from "react-dom";
+import { IReorderCompetitionBody } from "@/types/query.types";
 
 interface IProps {
    tournaments: ITournament[];

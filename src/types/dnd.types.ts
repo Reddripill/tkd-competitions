@@ -1,12 +1,6 @@
 import { SortableData } from "@dnd-kit/sortable";
 import { ICompetition } from "./entities.types";
 
-export interface IReorderCompetitionBody {
-   id: string;
-   order: number;
-   tournamentId: string;
-}
-
 export type CompetitionInfoType = {
    arenaId: string;
    tournamentId: string;

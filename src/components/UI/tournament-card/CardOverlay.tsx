@@ -12,7 +12,7 @@ const CardOverlay = ({ item }: IProps) => {
    return (
       <div className="flex items-center gap-x-3 bg-white rounded-xl shadow-light p-2 text-sm min-h-10">
          <div className="flex items-center justify-center">
-            <Checkbox className="size-4" />
+            <Checkbox checked={item.isFinished} className="size-4" />
          </div>
          <div className="grow">
             <CardItem item={item} />
