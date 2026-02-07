@@ -40,7 +40,7 @@ const TournamentCard = ({
    };
    return (
       <div className="bg-light-gray rounded-xl min-h-40 shadow-border">
-         <div ref={setNodeRef}>
+         <div ref={setNodeRef} className="size-full">
             <div className="flex flex-col h-full text-black py-4 px-2">
                <div className="flex items-center justify-between mb-4">
                   <div className="font-medium pl-2">

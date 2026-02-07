@@ -1,7 +1,7 @@
 import React from "react";
 import { ITournament } from "@/types/entities.types";
 import styles from "./Tournament.module.css";
-import TournamentCard from "./TournamentCard";
+import TournamentRow from "./TournamentRow";
 
 interface IProps {
    tournaments: ITournament[];
@@ -15,11 +15,10 @@ const TournamentGrid = ({ tournaments, isAdmin = false }: IProps) => {
             const uniqueArenas = new Set(
                tournament.competitions.map(comp => comp.arena.id)
             );
-            const competitionsByArena = Array.from(uniqueArenas).flatMap(
-               itemComp =>
-                  tournament.competitions
-                     .filter(i => i.arena.id === itemComp)
-                     .sort((a, b) => a.order - b.order)
+            const competitionsByArena = Array.from(uniqueArenas).map(itemComp =>
+               tournament.competitions
+                  .filter(i => i.arena.id === itemComp)
+                  .sort((a, b) => a.order - b.order)
             );
             return (
                <div className="mb-12" key={tournament.id}>
@@ -27,8 +26,8 @@ const TournamentGrid = ({ tournaments, isAdmin = false }: IProps) => {
                   <div>
                      {competitionsByArena.length !== 0 ? (
                         <div className={styles["card-grid"]}>
-                           <TournamentCard
-                              competitions={competitionsByArena}
+                           <TournamentRow
+                              competitionsByArena={competitionsByArena}
                               tournamentId={tournament.id}
                               isAdmin={isAdmin}
                            />

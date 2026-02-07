@@ -151,13 +151,32 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
 
       const activeCompetition = active.data.current as SortableItemDataType;
 
+      let prevActiveIndex: number | null = null;
+
       if (!prevTournaments) return;
 
       const prevTournament = prevTournaments.data.find(tournmanent =>
-         tournmanent.competitions.map(comp => comp.id === active.id)
+         tournmanent.competitions.find(comp => {
+            if (comp.id !== active.id) return false;
+            prevActiveIndex = comp.order - 1;
+            return true;
+         })
       );
 
-      if (!prevTournament) return;
+      if (
+         !prevTournament ||
+         prevActiveIndex === +activeCompetition.sortable.index
+      )
+         return;
+
+      const minIndex = Math.min(
+         prevActiveIndex ?? 0,
+         +activeCompetition.sortable.index
+      );
+      const maxIndex = Math.max(
+         prevActiveIndex ?? 0,
+         +activeCompetition.sortable.index
+      );
 
       if (activeCompetition.tournamentId === prevTournament.id) {
          const competitionsBody: IReorderCompetitionBody[] =
@@ -166,12 +185,16 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                tournamentId: activeCompetition.tournamentId,
                order: index + 1,
             }));
-         changeOrderMutation.mutate(competitionsBody);
+         const updatedCompetitionsBody = competitionsBody.filter(
+            (_, index) => index >= minIndex && index <= maxIndex
+         );
+         changeOrderMutation.mutate(updatedCompetitionsBody);
       }
    };
 
    const dragOverHandler = (event: DragOverEvent) => {
       const { active, over } = event;
+      console.log(over);
 
       if (!over?.data.current || active.id === over.id) return;
 
