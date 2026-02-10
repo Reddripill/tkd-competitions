@@ -240,7 +240,7 @@ const InputAndSelect = ({
                   label={label}
                >
                   <CommandInput
-                     value={value.trim()}
+                     value={value}
                      onValueChange={val => {
                         onChangeHandler(val);
                      }}

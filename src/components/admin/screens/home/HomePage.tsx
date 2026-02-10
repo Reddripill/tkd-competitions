@@ -23,7 +23,7 @@ const HomePage = () => {
          return changeTournamentData(result);
       },
    });
-   console.log(data);
+   // console.log(data);
    if (isPending) {
       return <Spinner />;
    }

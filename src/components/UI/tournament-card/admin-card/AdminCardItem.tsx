@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { ICompetition, ITournament } from "@/types/entities.types";
+import { ICompetition } from "@/types/entities.types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation } from "@tanstack/react-query";
@@ -8,9 +8,9 @@ import { API } from "@/constants/api";
 import { toast } from "sonner";
 import { IUpdateCompetitionStatusBody } from "@/types/query.types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 import { Checkbox } from "../../lib-components/checkbox";
 import CardOptions from "../CardOptions";
+import { IStructuredTournaments } from "../changeTournamentData";
 
 interface IProps {
    item: ICompetition;
@@ -33,7 +33,7 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
       unknown,
       unknown,
       IUpdateCompetitionStatusBody,
-      { prevState: IBaseEntityWithTitleAndCount<ITournament> | undefined }
+      { prevState: IStructuredTournaments | undefined }
    >({
       mutationFn: async (body: IUpdateCompetitionStatusBody) => {
          const res = await fetch(`${API.COMPETITIONS}/${body.id}`, {
@@ -58,31 +58,26 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
             queryKey: [QUERY_KEYS.TOURNAMENTS],
          });
 
-         const prevState = context.client.getQueryData<
-            IBaseEntityWithTitleAndCount<ITournament>
-         >([QUERY_KEYS.TOURNAMENTS]);
+         const prevState = context.client.getQueryData<IStructuredTournaments>([
+            QUERY_KEYS.TOURNAMENTS,
+         ]);
 
-         context.client.setQueryData<IBaseEntityWithTitleAndCount<ITournament>>(
+         context.client.setQueryData<IStructuredTournaments>(
             [QUERY_KEYS.TOURNAMENTS],
             old => {
-               if (!old) return old;
+               if (!old) return;
                return {
                   ...old,
-
-                  data: old.data.map(tournament => {
-                     return {
-                        ...tournament,
-
-                        competitions: tournament.competitions.map(comp => {
-                           if (comp.id !== updatedCompetition.id) return comp;
-
-                           return {
-                              ...comp,
-                              isFinished: updatedCompetition.isFinished,
-                           };
-                        }),
-                     };
-                  }),
+                  competitions: {
+                     ...old.competitions,
+                     byId: {
+                        ...old.competitions.byId,
+                        [updatedCompetition.id]: {
+                           ...old.competitions.byId[updatedCompetition.id],
+                           isFinished: updatedCompetition.isFinished,
+                        },
+                     },
+                  },
                };
             }
          );

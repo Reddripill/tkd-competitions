@@ -149,98 +149,173 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
 
    const dragEndHandler = (event: DragEndEvent) => {
       setActiveDragId(null);
+
       const { active } = event;
+      const activeId = active.id as string;
 
       const activeCompetition = active.data.current as SortableItemDataType;
 
-      if (!prevTournaments) return;
+      const nextTournaments = queryClient.getQueryData<IStructuredTournaments>([
+         QUERY_KEYS.TOURNAMENTS,
+      ]);
 
-      const prevActiveIndex = prevTournaments.orderByArena[
-         activeCompetition.tournamentId
-      ][activeCompetition.arenaId].findIndex(item => item === active.id);
+      if (!prevTournaments || !nextTournaments) return;
 
-      const prevArenaId = prevTournaments.competitions.byId[active.id].arena.id;
+      const fromTournamentId =
+         prevTournaments.competitions.byId[activeId].tournamentId;
+      const fromArenaId = prevTournaments.competitions.byId[activeId].arena.id;
+      const fromList =
+         prevTournaments.orderByArena[fromTournamentId][fromArenaId];
 
-      const prevTournamentId =
-         prevTournaments.competitions.byId[active.id].tournamentId;
+      const toTournamentId = activeCompetition.tournamentId;
+      const toArenaId = activeCompetition.arenaId;
+      const toList = nextTournaments.orderByArena[toTournamentId][toArenaId];
 
-      if (prevActiveIndex === +activeCompetition.sortable.index) return;
-
-      const minIndex = Math.min(
-         prevActiveIndex ?? 0,
-         +activeCompetition.sortable.index
-      );
-      const maxIndex = Math.max(
-         prevActiveIndex ?? 0,
-         +activeCompetition.sortable.index
-      );
+      const fromIndex = fromList.indexOf(activeId);
+      const toIndex = toList.indexOf(activeId);
 
       if (
-         activeCompetition.tournamentId === prevTournamentId &&
-         activeCompetition.arenaId === prevArenaId
+         fromTournamentId === toTournamentId &&
+         fromArenaId === toArenaId &&
+         fromIndex === toIndex
       ) {
-         const competitionsBody: IReorderCompetitionBody[] =
-            activeCompetition.sortable.items.map((item, index) => ({
-               id: item.toString(),
-               tournamentId: activeCompetition.tournamentId,
+         return;
+      }
+
+      if (fromTournamentId === toTournamentId && fromArenaId === toArenaId) {
+         const minIndex = Math.min(fromIndex, toIndex);
+         const maxIndex = Math.max(fromIndex, toIndex);
+
+         const nextBody: IReorderCompetitionBody[] = toList.map(
+            (item, index) => ({
+               id: item,
+               tournamentId: toTournamentId,
+               arenaId: toArenaId,
                order: index + 1,
-            }));
-         const updatedCompetitionsBody = competitionsBody.filter(
+            })
+         );
+
+         const filteredNextBody = nextBody.filter(
             (_, index) => index >= minIndex && index <= maxIndex
          );
-         changeOrderMutation.mutate(updatedCompetitionsBody);
+
+         changeOrderMutation.mutate(filteredNextBody);
+      } else {
+         const newFromList = fromList.filter(item => item !== activeId);
+
+         const prevBody: IReorderCompetitionBody[] = newFromList.map(
+            (item, index) => ({
+               id: item,
+               tournamentId: fromTournamentId,
+               arenaId: fromArenaId,
+               order: index + 1,
+            })
+         );
+
+         const nextBody: IReorderCompetitionBody[] = toList.map(
+            (item, index) => ({
+               id: item,
+               tournamentId: toTournamentId,
+               arenaId: toArenaId,
+               order: index + 1,
+            })
+         );
+
+         changeOrderMutation.mutate([...prevBody, ...nextBody]);
       }
    };
 
    const dragOverHandler = (event: DragOverEvent) => {
       const { active, over } = event;
 
-      if (!over?.data.current || active.id === over.id) return;
+      if (!prevTournaments || !over?.data.current || active.id === over.id)
+         return;
 
-      const activeCompetition = active.data.current as SortableItemDataType;
+      // const activeCompetition = active.data.current as SortableItemDataType;
       const overCompetition = over.data.current as SortableItemDataType;
 
-      if (
-         activeCompetition.tournamentId === overCompetition.tournamentId &&
-         activeCompetition.arenaId === overCompetition.arenaId
-      ) {
-         const newCompetitionsArr = arrayMove(
-            activeCompetition.sortable.items as string[],
-            activeCompetition.sortable.index,
-            overCompetition.sortable.index
-         );
+      queryClient.setQueryData<IStructuredTournaments>(
+         [QUERY_KEYS.TOURNAMENTS],
+         old => {
+            if (!old) return old;
 
-         queryClient.setQueryData(
-            [QUERY_KEYS.TOURNAMENTS],
-            (old: IStructuredTournaments) => {
-               if (!old) return old;
-               const nextCompetitionsById = { ...old.competitions.byId };
+            const activeId = active.id as string;
+            const overId = over.id as string;
 
-               newCompetitionsArr.forEach((compId, index) => {
-                  nextCompetitionsById[compId] = {
-                     ...nextCompetitionsById[compId],
-                     order: index + 1,
-                  };
-               });
-               const nextState: IStructuredTournaments = {
+            const fromTournamentId =
+               old.competitions.byId[activeId].tournamentId;
+            const fromArenaId = old.competitions.byId[activeId].arena.id;
+            const fromList = old.orderByArena[fromTournamentId][fromArenaId];
+
+            const toTournamentId = overCompetition.tournamentId;
+            const toArenaId = overCompetition.arenaId;
+            const toList = old.orderByArena[toTournamentId][toArenaId];
+
+            const fromIndex = fromList.indexOf(activeId);
+            const toIndex = toList.indexOf(overId);
+
+            if (fromIndex === -1 || toIndex === -1) return old;
+
+            if (
+               fromTournamentId === toTournamentId &&
+               fromArenaId === toArenaId
+            ) {
+               const newList = arrayMove(fromList, fromIndex, toIndex);
+               return {
                   ...old,
-                  competitions: {
-                     ...old.competitions,
-                     byId: nextCompetitionsById,
-                  },
                   orderByArena: {
                      ...old.orderByArena,
-                     [overCompetition.tournamentId]: {
-                        ...old.orderByArena[overCompetition.tournamentId],
-                        [overCompetition.arenaId]: newCompetitionsArr,
+                     [fromTournamentId]: {
+                        ...old.orderByArena[fromTournamentId],
+                        [fromArenaId]: newList,
                      },
                   },
                };
+            } else {
+               const arenaEntity = old.arenas.byId[toArenaId];
 
-               return nextState;
+               const newFromList = fromList.filter(item => item !== activeId);
+               const newToList = [
+                  ...toList.slice(0, toIndex),
+                  activeId,
+                  ...toList.slice(toIndex),
+               ];
+
+               const nextOrderByArena = { ...old.orderByArena };
+
+               if (fromTournamentId === toTournamentId) {
+                  nextOrderByArena[fromTournamentId] = {
+                     ...nextOrderByArena[fromTournamentId],
+                     [fromArenaId]: newFromList,
+                     [toArenaId]: newToList,
+                  };
+               } else {
+                  nextOrderByArena[fromTournamentId] = {
+                     ...nextOrderByArena[fromTournamentId],
+                     [fromArenaId]: newFromList,
+                  };
+                  nextOrderByArena[toTournamentId] = {
+                     ...nextOrderByArena[toTournamentId],
+                     [toArenaId]: newToList,
+                  };
+               }
+               return {
+                  ...old,
+                  competitions: {
+                     ...old.competitions,
+                     byId: {
+                        ...old.competitions.byId,
+                        [activeId]: {
+                           ...old.competitions.byId[activeId],
+                           arena: arenaEntity,
+                        },
+                     },
+                  },
+                  orderByArena: nextOrderByArena,
+               };
             }
-         );
-      }
+         }
+      );
    };
 
    return (

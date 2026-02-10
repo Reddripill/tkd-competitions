@@ -1,5 +1,8 @@
 import { ICompetition, ITournament } from "@/types/entities.types";
-import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
+import {
+   IBaseEntityWithTitle,
+   IBaseEntityWithTitleAndCount,
+} from "@/types/main.types";
 
 interface IStructuredTournament {
    id: string;
@@ -15,6 +18,10 @@ export interface IStructuredTournaments {
       byId: Record<string, IStructuredTournament>;
       allIds: string[];
    };
+   arenas: {
+      byId: Record<string, IBaseEntityWithTitle>;
+      allIds: string[];
+   };
    competitions: {
       byId: Record<string, IStructuredCompetition>;
       allIds: string[];
@@ -25,6 +32,10 @@ export interface IStructuredTournaments {
 
 const defaultValue: IStructuredTournaments = {
    tournaments: {
+      byId: {},
+      allIds: [],
+   },
+   arenas: {
       byId: {},
       allIds: [],
    },
@@ -46,6 +57,10 @@ export const changeTournamentData = (
          byId: {},
          allIds: [],
       },
+      arenas: {
+         byId: {},
+         allIds: [],
+      },
       competitions: {
          byId: {},
          allIds: [],
@@ -53,6 +68,7 @@ export const changeTournamentData = (
       orderByArena: {},
       count: response.count,
    };
+   const arenasArr: IBaseEntityWithTitle[] = [];
    for (const tournament of rawData) {
       structuredData.tournaments.allIds.push(tournament.id);
       structuredData.tournaments.byId[tournament.id] = {
@@ -60,7 +76,13 @@ export const changeTournamentData = (
          title: tournament.title,
          competitions: [],
       };
+
+      const competitionsList: Record<string, ICompetition[]> = {};
+
       for (const competition of tournament.competitions) {
+         if (!arenasArr.find(item => item.id === competition.arena.id)) {
+            arenasArr.push(competition.arena);
+         }
          structuredData.tournaments.byId[tournament.id].competitions.push(
             competition.id
          );
@@ -71,21 +93,29 @@ export const changeTournamentData = (
             tournamentId: tournament.id,
          };
 
-         if (!structuredData.orderByArena[tournament.id]) {
-            structuredData.orderByArena[tournament.id] = {};
+         if (!competitionsList[competition.arena.id]) {
+            competitionsList[competition.arena.id] = [];
          }
-         if (
-            !structuredData.orderByArena[tournament.id][competition.arena.id]
-         ) {
-            structuredData.orderByArena[tournament.id][competition.arena.id] =
-               [];
-         }
+         competitionsList[competition.arena.id].push(competition);
+      }
 
-         structuredData.orderByArena[tournament.id][
-            competition.arena.id
-         ].splice(competition.order - 1, 0, competition.id);
+      if (!structuredData.orderByArena[tournament.id]) {
+         structuredData.orderByArena[tournament.id] = {};
+      }
+
+      for (const [arenaId, competitions] of Object.entries(competitionsList)) {
+         const competitionIdsList = competitions
+            .sort((a, b) => a.order - b.order)
+            .map(item => item.id);
+         structuredData.orderByArena[tournament.id][arenaId] =
+            competitionIdsList;
       }
    }
 
+   structuredData.arenas.allIds = arenasArr.map(item => item.id);
+
+   for (const arena of arenasArr) {
+      structuredData.arenas.byId[arena.id] = arena;
+   }
    return structuredData;
 };
