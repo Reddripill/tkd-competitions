@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { ITournament } from "@/types/entities.types";
-import TournamentGrid from "./TournamentGrid";
-import ConfirmModal from "../modals/ConfirmModal";
-import UpdateModal from "../modals/UpdateModal";
+import ConfirmModal from "../../modals/ConfirmModal";
+import UpdateModal from "../../modals/UpdateModal";
 import { API } from "@/constants/api";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { ModalsProvider } from "@/contexts/ModalsContext";
-import CreateModal from "../modals/CreateModal";
+import CreateModal from "../../modals/CreateModal";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
@@ -21,15 +20,17 @@ import {
    useSensor,
    useSensors,
 } from "@dnd-kit/core";
-import CardOverlay from "./CardOverlay";
+import CardOverlay from "../CardOverlay";
 import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { SortableItemDataType } from "@/types/dnd.types";
 import { createPortal } from "react-dom";
 import { IReorderCompetitionBody } from "@/types/query.types";
+import { IStructuredTournaments } from "../changeTournamentData";
+import AdminTournamentGridContent from "./AdminTournamentGridContent";
 
 interface IProps {
-   tournaments: ITournament[];
+   tournaments: IStructuredTournaments;
 }
 
 export interface IDeleteCompetitionsBody {
@@ -42,7 +43,7 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
       null
    );
    const [prevTournaments, setPrevTournaments] =
-      useState<IBaseEntityWithTitleAndCount<ITournament> | null>(null);
+      useState<IStructuredTournaments | null>(null);
    const [activeDragId, setActiveDragId] = useState<string | null>(null);
    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -123,9 +124,10 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
    };
 
    const getOverlayItem = () => {
-      return tournaments
-         .flatMap(tournament => tournament.competitions)
-         .find(comp => comp.id === activeDragId);
+      if (activeDragId) {
+         return tournaments.competitions.byId[activeDragId];
+      }
+      return null;
    };
 
    const overlayItem = activeDragId ? getOverlayItem() : null;
@@ -136,9 +138,9 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          queryKey: [QUERY_KEYS.TOURNAMENTS],
       });
       if (!prevTournaments) {
-         const prevState = queryClient.getQueryData<
-            IBaseEntityWithTitleAndCount<ITournament>
-         >([QUERY_KEYS.TOURNAMENTS]);
+         const prevState = queryClient.getQueryData<IStructuredTournaments>([
+            QUERY_KEYS.TOURNAMENTS,
+         ]);
          if (prevState) {
             setPrevTournaments(prevState);
          }
@@ -151,23 +153,18 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
 
       const activeCompetition = active.data.current as SortableItemDataType;
 
-      let prevActiveIndex: number | null = null;
-
       if (!prevTournaments) return;
 
-      const prevTournament = prevTournaments.data.find(tournmanent =>
-         tournmanent.competitions.find(comp => {
-            if (comp.id !== active.id) return false;
-            prevActiveIndex = comp.order - 1;
-            return true;
-         })
-      );
+      const prevActiveIndex = prevTournaments.orderByArena[
+         activeCompetition.tournamentId
+      ][activeCompetition.arenaId].findIndex(item => item === active.id);
 
-      if (
-         !prevTournament ||
-         prevActiveIndex === +activeCompetition.sortable.index
-      )
-         return;
+      const prevArenaId = prevTournaments.competitions.byId[active.id].arena.id;
+
+      const prevTournamentId =
+         prevTournaments.competitions.byId[active.id].tournamentId;
+
+      if (prevActiveIndex === +activeCompetition.sortable.index) return;
 
       const minIndex = Math.min(
          prevActiveIndex ?? 0,
@@ -178,7 +175,10 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          +activeCompetition.sortable.index
       );
 
-      if (activeCompetition.tournamentId === prevTournament.id) {
+      if (
+         activeCompetition.tournamentId === prevTournamentId &&
+         activeCompetition.arenaId === prevArenaId
+      ) {
          const competitionsBody: IReorderCompetitionBody[] =
             activeCompetition.sortable.items.map((item, index) => ({
                id: item.toString(),
@@ -194,53 +194,50 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
 
    const dragOverHandler = (event: DragOverEvent) => {
       const { active, over } = event;
-      console.log(over);
 
       if (!over?.data.current || active.id === over.id) return;
 
       const activeCompetition = active.data.current as SortableItemDataType;
       const overCompetition = over.data.current as SortableItemDataType;
 
-      if (activeCompetition.arenaId === overCompetition.arenaId) {
+      if (
+         activeCompetition.tournamentId === overCompetition.tournamentId &&
+         activeCompetition.arenaId === overCompetition.arenaId
+      ) {
          const newCompetitionsArr = arrayMove(
-            activeCompetition.sortable.items,
+            activeCompetition.sortable.items as string[],
             activeCompetition.sortable.index,
             overCompetition.sortable.index
          );
-         const competitionsBody: IReorderCompetitionBody[] =
-            newCompetitionsArr.map((item, index) => ({
-               id: item.toString(),
-               tournamentId: activeCompetition.tournamentId,
-               order: index + 1,
-            }));
 
          queryClient.setQueryData(
             [QUERY_KEYS.TOURNAMENTS],
-            (old: IBaseEntityWithTitleAndCount<ITournament>) => {
+            (old: IStructuredTournaments) => {
                if (!old) return old;
+               const nextCompetitionsById = { ...old.competitions.byId };
 
-               return {
+               newCompetitionsArr.forEach((compId, index) => {
+                  nextCompetitionsById[compId] = {
+                     ...nextCompetitionsById[compId],
+                     order: index + 1,
+                  };
+               });
+               const nextState: IStructuredTournaments = {
                   ...old,
-
-                  data: old.data.map(tournament => {
-                     return {
-                        ...tournament,
-
-                        competitions: tournament.competitions.map(comp => {
-                           const updated = competitionsBody.find(
-                              b => b.id === comp.id
-                           );
-
-                           if (!updated) return comp;
-
-                           return {
-                              ...comp,
-                              order: updated.order,
-                           };
-                        }),
-                     };
-                  }),
+                  competitions: {
+                     ...old.competitions,
+                     byId: nextCompetitionsById,
+                  },
+                  orderByArena: {
+                     ...old.orderByArena,
+                     [overCompetition.tournamentId]: {
+                        ...old.orderByArena[overCompetition.tournamentId],
+                        [overCompetition.arenaId]: newCompetitionsArr,
+                     },
+                  },
                };
+
+               return nextState;
             }
          );
       }
@@ -288,7 +285,7 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                description="Добавьте одну или несколько записей дисциплин"
                actionBtnText="Добавить"
             />
-            <TournamentGrid tournaments={tournaments} isAdmin={true} />
+            <AdminTournamentGridContent data={tournaments} />
          </ModalsProvider>
          {createPortal(
             <DragOverlay>

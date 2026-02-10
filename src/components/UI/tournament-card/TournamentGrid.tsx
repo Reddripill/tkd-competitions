@@ -1,14 +1,13 @@
 import React from "react";
 import { ITournament } from "@/types/entities.types";
 import styles from "./Tournament.module.css";
-import TournamentRow from "./TournamentRow";
+import TournamentCard from "./TournamentCard";
 
 interface IProps {
    tournaments: ITournament[];
-   isAdmin?: boolean;
 }
 
-const TournamentGrid = ({ tournaments, isAdmin = false }: IProps) => {
+const TournamentGrid = ({ tournaments }: IProps) => {
    return (
       <div>
          {tournaments.map(tournament => {
@@ -26,11 +25,13 @@ const TournamentGrid = ({ tournaments, isAdmin = false }: IProps) => {
                   <div>
                      {competitionsByArena.length !== 0 ? (
                         <div className={styles["card-grid"]}>
-                           <TournamentRow
-                              competitionsByArena={competitionsByArena}
-                              tournamentId={tournament.id}
-                              isAdmin={isAdmin}
-                           />
+                           {competitionsByArena.map(competitions => (
+                              <TournamentCard
+                                 key={competitions[0].id}
+                                 tournamentId={tournament.id}
+                                 competitions={competitions}
+                              />
+                           ))}
                         </div>
                      ) : (
                         <div>Нет арен</div>

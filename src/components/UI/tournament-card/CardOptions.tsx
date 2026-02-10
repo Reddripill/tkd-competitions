@@ -7,7 +7,7 @@ import {
 import { Ellipsis, EllipsisVertical, Pen, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
-import { IDeleteCompetitionsBody } from "./AdminTournamentGrid";
+import { IDeleteCompetitionsBody } from "./admin-card/AdminTournamentGrid";
 
 interface IProps {
    tournamentId: string;

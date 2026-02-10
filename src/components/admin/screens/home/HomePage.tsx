@@ -6,25 +6,24 @@ import { ROUTES } from "@/constants/routes";
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { API } from "@/constants/api";
-import { ITournament } from "@/types/entities.types";
 import { Spinner } from "@/components/UI/lib-components/spinner";
 import NotExist from "@/components/UI/NotExist";
-import AdminTournamentGrid from "@/components/UI/tournament-card/AdminTournamentGrid";
-import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
+import AdminTournamentGrid from "@/components/UI/tournament-card/admin-card/AdminTournamentGrid";
+import {
+   changeTournamentData,
+   IStructuredTournaments,
+} from "@/components/UI/tournament-card/changeTournamentData";
 
 const HomePage = () => {
-   const {
-      data: response,
-      isPending,
-      isError,
-   } = useQuery<IBaseEntityWithTitleAndCount<ITournament>>({
+   const { data, isPending, isError } = useQuery<IStructuredTournaments>({
       queryKey: [QUERY_KEYS.TOURNAMENTS],
       queryFn: async () => {
          const data = await fetch(API.TOURNAMENTS);
          const result = await data.json();
-         return result;
+         return changeTournamentData(result);
       },
    });
+   console.log(data);
    if (isPending) {
       return <Spinner />;
    }
@@ -37,9 +36,9 @@ const HomePage = () => {
          subTitle="Наглядное представление всех соревнований и мест их проведения"
          actions={<AddingButton link={ROUTES.NEW_COMPETITION} />}
       >
-         {response && response.count !== 0 ? (
+         {data && data.count !== 0 ? (
             <div>
-               <AdminTournamentGrid tournaments={response.data} />
+               <AdminTournamentGrid tournaments={data} />
             </div>
          ) : (
             <NotExist />

@@ -2,7 +2,6 @@ import React from "react";
 import { ICompetition } from "@/types/entities.types";
 import { EllipsisVertical } from "lucide-react";
 import { Checkbox } from "../lib-components/checkbox";
-import { CardItem } from "./TournamentCard";
 
 interface IProps {
    item: ICompetition;
@@ -14,8 +13,21 @@ const CardOverlay = ({ item }: IProps) => {
          <div className="flex items-center justify-center">
             <Checkbox checked={item.isFinished} className="size-4" />
          </div>
-         <div className="grow">
-            <CardItem item={item} />
+
+         <div className="grow cursor-grab">
+            <div>
+               {item.discipline.title}
+               {item.categories.length > 0 && (
+                  <span>
+                     {" "}
+                     (
+                     {item.categories
+                        .map(item => item.category.title)
+                        .join(", ")}
+                     )
+                  </span>
+               )}
+            </div>
          </div>
          <div className="shrink-0">
             <EllipsisVertical size={18} />

@@ -3,15 +3,14 @@ import { cn } from "@/lib/utils";
 import { ICompetition, ITournament } from "@/types/entities.types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Checkbox } from "../lib-components/checkbox";
-import { CardItem } from "./TournamentCard";
-import CardOptions from "./CardOptions";
 import { useMutation } from "@tanstack/react-query";
 import { API } from "@/constants/api";
 import { toast } from "sonner";
 import { IUpdateCompetitionStatusBody } from "@/types/query.types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
+import { Checkbox } from "../../lib-components/checkbox";
+import CardOptions from "../CardOptions";
 
 interface IProps {
    item: ICompetition;
@@ -139,7 +138,19 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
                ref={setActivatorNodeRef}
                {...listeners}
             >
-               <CardItem item={item} />
+               <div>
+                  {item.discipline.title}
+                  {item.categories.length > 0 && (
+                     <span>
+                        {" "}
+                        (
+                        {item.categories
+                           .map(item => item.category.title)
+                           .join(", ")}
+                        )
+                     </span>
+                  )}
+               </div>
             </div>
             <div className="shrink-0">
                <CardOptions

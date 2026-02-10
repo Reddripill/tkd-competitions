@@ -5,7 +5,7 @@ export interface ICompetitionCategory extends IBaseEntity {
 }
 
 export interface ICompetition extends IBaseEntity {
-   discipline: IBaseEntityWithTitle | null;
+   discipline: IBaseEntityWithTitle;
    arena: IBaseEntityWithTitle;
    categories: ICompetitionCategory[];
    order: number;
