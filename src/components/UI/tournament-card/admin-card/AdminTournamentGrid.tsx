@@ -247,6 +247,10 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             const fromArenaId = old.competitions.byId[activeId].arena.id;
             const fromList = old.orderByArena[fromTournamentId][fromArenaId];
 
+            console.log("old", old);
+            console.log("fromTournamentId", fromTournamentId);
+            console.log("fromArenaId", fromArenaId);
+
             const toTournamentId = overCompetition.tournamentId;
             const toArenaId = overCompetition.arenaId;
             const toList = old.orderByArena[toTournamentId][toArenaId];
@@ -281,22 +285,31 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                   ...toList.slice(toIndex),
                ];
 
-               const nextOrderByArena = { ...old.orderByArena };
+               let nextOrderByArena: Record<
+                  string,
+                  Record<string, string[]>
+               > = {};
 
                if (fromTournamentId === toTournamentId) {
-                  nextOrderByArena[fromTournamentId] = {
-                     ...nextOrderByArena[fromTournamentId],
-                     [fromArenaId]: newFromList,
-                     [toArenaId]: newToList,
+                  nextOrderByArena = {
+                     ...old.orderByArena,
+                     [fromTournamentId]: {
+                        ...old.orderByArena[fromTournamentId],
+                        [fromArenaId]: newFromList,
+                        [toArenaId]: newToList,
+                     },
                   };
                } else {
-                  nextOrderByArena[fromTournamentId] = {
-                     ...nextOrderByArena[fromTournamentId],
-                     [fromArenaId]: newFromList,
-                  };
-                  nextOrderByArena[toTournamentId] = {
-                     ...nextOrderByArena[toTournamentId],
-                     [toArenaId]: newToList,
+                  nextOrderByArena = {
+                     ...old.orderByArena,
+                     [fromTournamentId]: {
+                        ...old.orderByArena[fromTournamentId],
+                        [fromArenaId]: newFromList,
+                     },
+                     [toTournamentId]: {
+                        ...old.orderByArena[toTournamentId],
+                        [toArenaId]: newToList,
+                     },
                   };
                }
                return {
@@ -308,6 +321,7 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                         [activeId]: {
                            ...old.competitions.byId[activeId],
                            arena: arenaEntity,
+                           tournamentId: toTournamentId,
                         },
                      },
                   },

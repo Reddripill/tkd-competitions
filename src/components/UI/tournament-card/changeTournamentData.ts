@@ -80,9 +80,14 @@ export const changeTournamentData = (
       const competitionsList: Record<string, ICompetition[]> = {};
 
       for (const competition of tournament.competitions) {
+         if (!structuredData.orderByArena[tournament.id]) {
+            structuredData.orderByArena[tournament.id] = {};
+         }
+
          if (!arenasArr.find(item => item.id === competition.arena.id)) {
             arenasArr.push(competition.arena);
          }
+
          structuredData.tournaments.byId[tournament.id].competitions.push(
             competition.id
          );
@@ -97,10 +102,6 @@ export const changeTournamentData = (
             competitionsList[competition.arena.id] = [];
          }
          competitionsList[competition.arena.id].push(competition);
-      }
-
-      if (!structuredData.orderByArena[tournament.id]) {
-         structuredData.orderByArena[tournament.id] = {};
       }
 
       for (const [arenaId, competitions] of Object.entries(competitionsList)) {
