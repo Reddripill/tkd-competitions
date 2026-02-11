@@ -17,7 +17,6 @@ import { useMutation } from "@tanstack/react-query";
 const NewCompetitionPage = () => {
    const mutation = useMutation({
       mutationFn: async (body: CompetitionType) => {
-         console.log(body);
          const res = await fetch(API.COMPETITIONS, {
             method: "POST",
             headers: {

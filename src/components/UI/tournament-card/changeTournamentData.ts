@@ -1,8 +1,9 @@
-import { ICompetition, ITournament } from "@/types/entities.types";
 import {
-   IBaseEntityWithTitleAndCount,
-   IOrderedBaseEntity,
-} from "@/types/main.types";
+   ICompetition,
+   ITournament,
+   ITournamentArena,
+} from "@/types/entities.types";
+import { IBaseEntityWithTitleAndCount } from "@/types/main.types";
 
 interface IStructuredTournament {
    id: string;
@@ -19,7 +20,7 @@ export interface IStructuredTournaments {
       allIds: string[];
    };
    arenas: {
-      byId: Record<string, IOrderedBaseEntity>;
+      byId: Record<string, ITournamentArena>;
       allIds: string[];
    };
    competitions: {
@@ -79,18 +80,16 @@ export const changeTournamentData = (
          competitions: [],
       };
 
+      for (const item of tournament.arenas) {
+         structuredData.arenas.allIds.push(item.arena.id);
+         structuredData.arenas.byId[item.arena.id] = item;
+      }
+
       const competitionsList: Record<string, ICompetition[]> = {};
-      const arenasInTournament: IOrderedBaseEntity[] = [];
 
       for (const competition of tournament.competitions) {
          if (!structuredData.orderByArena[tournament.id]) {
             structuredData.orderByArena[tournament.id] = {};
-         }
-
-         if (
-            !arenasInTournament.find(arena => arena.id === competition.arena.id)
-         ) {
-            arenasInTournament.push(competition.arena);
          }
 
          structuredData.tournaments.byId[tournament.id].competitions.push(
@@ -103,24 +102,25 @@ export const changeTournamentData = (
             tournamentId: tournament.id,
          };
 
-         if (!competitionsList[competition.arena.id]) {
-            competitionsList[competition.arena.id] = [];
+         const arenaEntity = structuredData.arenas.byId[competition.arena.id];
+
+         if (!competitionsList[arenaEntity.id]) {
+            competitionsList[arenaEntity.id] = [];
          }
-         competitionsList[competition.arena.id].push(competition);
+         competitionsList[arenaEntity.id].push(competition);
       }
 
-      arenasInTournament.sort((a, b) => a.order - b.order);
+      const sortedArenas = tournament.arenas
+         .slice()
+         .sort((a, b) => a.order - b.order);
 
-      for (const arena of arenasInTournament) {
-         const competitionIdsList = competitionsList[arena.id]
+      for (const arenaEntity of sortedArenas) {
+         const competitionIdsList = competitionsList[arenaEntity.id]
             .sort((a, b) => a.order - b.order)
             .map(item => item.id);
 
-         structuredData.orderByArena[tournament.id][arena.id] =
+         structuredData.orderByArena[tournament.id][arenaEntity.arena.id] =
             competitionIdsList;
-
-         structuredData.arenas.byId[arena.id] = arena;
-         structuredData.arenas.allIds.push(arena.id);
       }
    }
    return structuredData;

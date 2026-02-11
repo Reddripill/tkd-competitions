@@ -2,6 +2,7 @@ import {
    IBaseEntity,
    IBaseEntityWithTitle,
    IOrderedBaseEntity,
+   IOrderedBaseEntityWithTitle,
 } from "./main.types";
 
 export interface ICompetitionCategory extends IBaseEntity {
@@ -10,12 +11,17 @@ export interface ICompetitionCategory extends IBaseEntity {
 
 export interface ICompetition extends IBaseEntity {
    discipline: IBaseEntityWithTitle;
-   arena: IOrderedBaseEntity;
+   arena: IBaseEntityWithTitle;
    categories: ICompetitionCategory[];
    order: number;
    isFinished: boolean;
 }
 
-export interface ITournament extends IOrderedBaseEntity {
+export interface ITournamentArena extends IOrderedBaseEntity {
+   arena: IBaseEntityWithTitle;
+}
+
+export interface ITournament extends IOrderedBaseEntityWithTitle {
+   arenas: ITournamentArena[];
    competitions: ICompetition[];
 }

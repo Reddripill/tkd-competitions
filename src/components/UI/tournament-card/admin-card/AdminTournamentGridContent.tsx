@@ -12,7 +12,7 @@ const AdminTournamentGridContent = ({ data }: IProps) => {
       <div>
          {data.tournaments.allIds.map(tournamentId => {
             const currentTournament = data.tournaments.byId[tournamentId];
-            const arenas = data.orderByArena[tournamentId] ?? [];
+            const arenas = data.orderByArena[tournamentId];
             const arenaIds = Object.keys(arenas);
             return (
                <div className="mb-12" key={tournamentId}>
@@ -20,20 +20,23 @@ const AdminTournamentGridContent = ({ data }: IProps) => {
                   <div>
                      {arenaIds.length !== 0 ? (
                         <div className={styles["card-grid"]}>
-                           {arenaIds.map(arena => {
+                           {arenaIds.map(arenaId => {
                               const competitionIdsByArena =
-                                 data.orderByArena[tournamentId][arena] ?? [];
+                                 data.orderByArena[tournamentId][arenaId];
                               const competitionsByArena =
                                  competitionIdsByArena.map(
                                     comp => data.competitions.byId[comp]
                                  );
                               return (
                                  <AdminTournamentCard
-                                    key={arena}
+                                    key={arenaId}
                                     tournamentId={tournamentId}
                                     competitions={competitionsByArena}
                                     competitionsList={competitionIdsByArena}
-                                    arenaId={arena}
+                                    arenaId={arenaId}
+                                    arenaEntity={
+                                       data.arenas.byId[arenaId].arena
+                                    }
                                  />
                               );
                            })}

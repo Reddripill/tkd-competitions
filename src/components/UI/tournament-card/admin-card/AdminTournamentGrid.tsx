@@ -77,7 +77,6 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          toast.error("Ошибка при удалении");
       },
    });
-
    const changeOrderMutation = useMutation<
       IBaseEntityWithTitleAndCount<ITournament>,
       unknown,
@@ -244,10 +243,6 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             const fromArenaId = old.competitions.byId[activeId].arena.id;
             const fromList = old.orderByArena[fromTournamentId][fromArenaId];
 
-            /* console.log("old", old);
-            console.log("fromTournamentId", fromTournamentId);
-            console.log("fromArenaId", fromArenaId); */
-
             const toTournamentId = overCompetition.tournamentId;
             const toArenaId = overCompetition.arenaId;
             const toList = old.orderByArena[toTournamentId][toArenaId];
@@ -317,7 +312,7 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                         ...old.competitions.byId,
                         [activeId]: {
                            ...old.competitions.byId[activeId],
-                           arena: arenaEntity,
+                           arena: arenaEntity.arena,
                            tournamentId: toTournamentId,
                         },
                      },
