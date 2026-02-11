@@ -15,6 +15,10 @@ export interface IBaseEntityWithTitle extends IBaseEntity {
    title: string;
 }
 
+export interface IOrderedBaseEntity extends IBaseEntityWithTitle {
+   order: number;
+}
+
 export interface IBaseEntityWithTitleAndCount<
    T extends IBaseEntityWithTitle = IBaseEntityWithTitle
 > {

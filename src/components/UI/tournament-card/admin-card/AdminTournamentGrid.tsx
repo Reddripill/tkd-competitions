@@ -182,18 +182,16 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          return;
       }
 
+      const nextBody: IReorderCompetitionBody[] = toList.map((item, index) => ({
+         id: item,
+         tournamentId: toTournamentId,
+         arenaId: toArenaId,
+         order: index + 1,
+      }));
+
       if (fromTournamentId === toTournamentId && fromArenaId === toArenaId) {
          const minIndex = Math.min(fromIndex, toIndex);
          const maxIndex = Math.max(fromIndex, toIndex);
-
-         const nextBody: IReorderCompetitionBody[] = toList.map(
-            (item, index) => ({
-               id: item,
-               tournamentId: toTournamentId,
-               arenaId: toArenaId,
-               order: index + 1,
-            })
-         );
 
          const filteredNextBody = nextBody.filter(
             (_, index) => index >= minIndex && index <= maxIndex
@@ -212,16 +210,15 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             })
          );
 
-         const nextBody: IReorderCompetitionBody[] = toList.map(
-            (item, index) => ({
-               id: item,
-               tournamentId: toTournamentId,
-               arenaId: toArenaId,
-               order: index + 1,
-            })
+         const filteredPrevBody = prevBody.filter(
+            (_, index) => index >= fromIndex
          );
 
-         changeOrderMutation.mutate([...prevBody, ...nextBody]);
+         const filteredNextBody = nextBody.filter(
+            (_, index) => index >= toIndex
+         );
+
+         changeOrderMutation.mutate([...filteredPrevBody, ...filteredNextBody]);
       }
    };
 
@@ -247,9 +244,9 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             const fromArenaId = old.competitions.byId[activeId].arena.id;
             const fromList = old.orderByArena[fromTournamentId][fromArenaId];
 
-            console.log("old", old);
+            /* console.log("old", old);
             console.log("fromTournamentId", fromTournamentId);
-            console.log("fromArenaId", fromArenaId);
+            console.log("fromArenaId", fromArenaId); */
 
             const toTournamentId = overCompetition.tournamentId;
             const toArenaId = overCompetition.arenaId;

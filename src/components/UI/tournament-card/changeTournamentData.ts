@@ -1,7 +1,7 @@
 import { ICompetition, ITournament } from "@/types/entities.types";
 import {
-   IBaseEntityWithTitle,
    IBaseEntityWithTitleAndCount,
+   IOrderedBaseEntity,
 } from "@/types/main.types";
 
 interface IStructuredTournament {
@@ -19,7 +19,7 @@ export interface IStructuredTournaments {
       allIds: string[];
    };
    arenas: {
-      byId: Record<string, IBaseEntityWithTitle>;
+      byId: Record<string, IOrderedBaseEntity>;
       allIds: string[];
    };
    competitions: {
@@ -68,7 +68,9 @@ export const changeTournamentData = (
       orderByArena: {},
       count: response.count,
    };
-   const arenasArr: IBaseEntityWithTitle[] = [];
+
+   rawData.sort((a, b) => a.order - b.order);
+
    for (const tournament of rawData) {
       structuredData.tournaments.allIds.push(tournament.id);
       structuredData.tournaments.byId[tournament.id] = {
@@ -78,14 +80,17 @@ export const changeTournamentData = (
       };
 
       const competitionsList: Record<string, ICompetition[]> = {};
+      const arenasInTournament: IOrderedBaseEntity[] = [];
 
       for (const competition of tournament.competitions) {
          if (!structuredData.orderByArena[tournament.id]) {
             structuredData.orderByArena[tournament.id] = {};
          }
 
-         if (!arenasArr.find(item => item.id === competition.arena.id)) {
-            arenasArr.push(competition.arena);
+         if (
+            !arenasInTournament.find(arena => arena.id === competition.arena.id)
+         ) {
+            arenasInTournament.push(competition.arena);
          }
 
          structuredData.tournaments.byId[tournament.id].competitions.push(
@@ -104,19 +109,19 @@ export const changeTournamentData = (
          competitionsList[competition.arena.id].push(competition);
       }
 
-      for (const [arenaId, competitions] of Object.entries(competitionsList)) {
-         const competitionIdsList = competitions
+      arenasInTournament.sort((a, b) => a.order - b.order);
+
+      for (const arena of arenasInTournament) {
+         const competitionIdsList = competitionsList[arena.id]
             .sort((a, b) => a.order - b.order)
             .map(item => item.id);
-         structuredData.orderByArena[tournament.id][arenaId] =
+
+         structuredData.orderByArena[tournament.id][arena.id] =
             competitionIdsList;
+
+         structuredData.arenas.byId[arena.id] = arena;
+         structuredData.arenas.allIds.push(arena.id);
       }
-   }
-
-   structuredData.arenas.allIds = arenasArr.map(item => item.id);
-
-   for (const arena of arenasArr) {
-      structuredData.arenas.byId[arena.id] = arena;
    }
    return structuredData;
 };
