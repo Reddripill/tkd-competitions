@@ -52,6 +52,7 @@ export const changeTournamentData = (
    response: IBaseEntityWithTitleAndCount<ITournament> | undefined
 ) => {
    if (!response) return defaultValue;
+
    const rawData = response.data;
    const structuredData: IStructuredTournaments = {
       tournaments: {
@@ -115,6 +116,9 @@ export const changeTournamentData = (
          .sort((a, b) => a.order - b.order);
 
       for (const arenaEntity of sortedArenas) {
+         if (!competitionsList[arenaEntity.id]) {
+            competitionsList[arenaEntity.id] = [];
+         }
          const competitionIdsList = competitionsList[arenaEntity.id]
             .sort((a, b) => a.order - b.order)
             .map(item => item.id);

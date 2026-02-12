@@ -250,7 +250,8 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
             const fromIndex = fromList.indexOf(activeId);
             const toIndex = toList.indexOf(overId);
 
-            if (fromIndex === -1 || toIndex === -1) return old;
+            if (fromIndex === -1 || (toIndex === -1 && toList.length !== 0))
+               return old;
 
             if (
                fromTournamentId === toTournamentId &&
@@ -271,11 +272,17 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
                const arenaEntity = old.arenas.byId[toArenaId];
 
                const newFromList = fromList.filter(item => item !== activeId);
-               const newToList = [
-                  ...toList.slice(0, toIndex),
-                  activeId,
-                  ...toList.slice(toIndex),
-               ];
+               let newToList: string[] = [];
+
+               if (toList.length === 0) {
+                  newToList.push(activeId);
+               } else {
+                  newToList = [
+                     ...toList.slice(0, toIndex),
+                     activeId,
+                     ...toList.slice(toIndex),
+                  ];
+               }
 
                let nextOrderByArena: Record<
                   string,
