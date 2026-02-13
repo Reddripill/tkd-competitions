@@ -6,39 +6,27 @@ import {
 } from "../lib-components/popover";
 import { Ellipsis, EllipsisVertical, Pen, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
-import { useGetModalsContext } from "@/contexts/ModalsContext";
-import { IDeleteCompetitionsBody } from "./admin-card/AdminTournamentGrid";
 
 interface IProps {
-   tournamentId: string;
-   arenaId: string;
    isVertical?: boolean;
+   showDelete: () => void;
+   showUpdate: () => void;
 }
 
-const CardOptions = ({ tournamentId, arenaId, isVertical = false }: IProps) => {
+const CardOptions = ({
+   showDelete,
+   showUpdate,
+   isVertical = false,
+}: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
-   const { setCurrentId, showDeleteModal, showUpdateModal } =
-      useGetModalsContext<IDeleteCompetitionsBody>();
 
    const showDeleteModalHandler = () => {
       setIsOpen(false);
-      if (showDeleteModal && setCurrentId) {
-         setCurrentId({
-            arena_id: arenaId,
-            tournament_id: tournamentId,
-         });
-         showDeleteModal();
-      }
+      showDelete();
    };
    const showUpdateModalHandler = () => {
       setIsOpen(false);
-      if (showUpdateModal && setCurrentId) {
-         setCurrentId({
-            arena_id: arenaId,
-            tournament_id: tournamentId,
-         });
-         showUpdateModal();
-      }
+      showUpdate();
    };
    return (
       <div className="relative">

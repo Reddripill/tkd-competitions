@@ -3,46 +3,15 @@ import React from "react";
 import MainBlock from "../../MainBlock";
 import { FieldGroup } from "@/components/UI/lib-components/field";
 import { API } from "@/constants/api";
-import {
-   CompetitionType,
-   newCompetitionSchema,
-} from "./new-competition.schema";
+import { newCompetitionSchema } from "./new-competition.schema";
 import { defaultCompetition } from "./new-competition.constants";
 import { QUERY_KEYS } from "@/constants/queryKeys";
-import { toast } from "sonner";
 import { useAppForm } from "@/contexts/AdminFormContext";
 import AddFieldButton from "@/components/UI/form/AddFieldButton";
-import { useMutation } from "@tanstack/react-query";
+import { useCreateCompetition } from "@/hooks/query";
 
 const NewCompetitionPage = () => {
-   const mutation = useMutation({
-      mutationFn: async (body: CompetitionType) => {
-         const res = await fetch(API.COMPETITIONS, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               tournamentTitle: body.tournamentTitle,
-               arenas: body.arenas,
-            }),
-         });
-
-         if (!res.ok) {
-            throw new Error("Ошибка при создании");
-         }
-
-         return res.json();
-      },
-
-      onSuccess: () => {
-         toast.success("Соревнования успешно созданы");
-      },
-
-      onError: () => {
-         toast.error("Ошибка при создании");
-      },
-   });
+   const mutation = useCreateCompetition({ queryKey: QUERY_KEYS.TOURNAMENTS });
    const form = useAppForm({
       defaultValues: defaultCompetition,
       onSubmit: ({ value }) => {

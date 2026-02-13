@@ -11,6 +11,7 @@ import { QUERY_KEYS } from "@/constants/queryKeys";
 import { Checkbox } from "../../lib-components/checkbox";
 import CardOptions from "../CardOptions";
 import { IStructuredTournaments } from "../changeTournamentData";
+import { useGetModalsContext } from "@/contexts/ModalsContext";
 
 interface IProps {
    item: ICompetition;
@@ -19,6 +20,9 @@ interface IProps {
 }
 
 const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
+   const { setCurrentId, showDeleteModal, showUpdateModal } =
+      useGetModalsContext<string>();
+
    const {
       attributes,
       listeners,
@@ -104,6 +108,19 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
       transition,
    };
 
+   const showDeleteModalHandler = () => {
+      if (showDeleteModal && setCurrentId) {
+         setCurrentId(item.id);
+         showDeleteModal();
+      }
+   };
+   const showUpdateModalHandler = () => {
+      if (showUpdateModal && setCurrentId) {
+         setCurrentId(item.id);
+         showUpdateModal();
+      }
+   };
+
    const handleChecked = () => {
       updateStatusMutation.mutate({
          id: item.id,
@@ -149,8 +166,8 @@ const AdminCardItem = ({ item, tournamentId, arenaId }: IProps) => {
             </div>
             <div className="shrink-0">
                <CardOptions
-                  tournamentId={tournamentId}
-                  arenaId={arenaId}
+                  showDelete={showDeleteModalHandler}
+                  showUpdate={showUpdateModalHandler}
                   isVertical={true}
                />
             </div>

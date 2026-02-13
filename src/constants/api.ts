@@ -8,4 +8,5 @@ export const API = {
    REORDER_COMPETITIONS: BASEPATH + "/competitions/reorder",
    MOVE_COMPETITIONS: BASEPATH + "/competitions/move",
    TOURNAMENTS: BASEPATH + "/tournaments",
+   ARENAS_IN_TOURNAMENT: BASEPATH + "/tournaments-arenas",
 } as const;

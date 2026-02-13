@@ -7,53 +7,70 @@ import {
    DialogPortal,
    DialogTitle,
 } from "../lib-components/dialog";
-import { ISourceAndKey } from "@/types/main.types";
 import ActionButton from "../buttons/ActionButton";
-import CreateForm from "../form/create-form/CreateForm";
 import { XIcon } from "lucide-react";
 import { useAppForm } from "@/contexts/AdminFormContext";
-import { defaultCreationData } from "../form/create-form/create-form.constants";
-import { useAddEntity } from "@/hooks/query";
+import { useCreateCompetition } from "@/hooks/query";
 import ConfirmModal from "./ConfirmModal";
 import { useGetModalsContext } from "@/contexts/ModalsContext";
 import { IModalOptionalContent } from "@/types/modals.types";
+import { defaultCreationCompData } from "../form/competition-form/competition-form.contstants";
+import CompetitionForm from "../form/competition-form/CompetitionForm";
+import { ISourceAndKey } from "@/types/main.types";
 
-interface IProps extends ISourceAndKey, IModalOptionalContent {
+interface IProps
+   extends IModalOptionalContent,
+      Pick<ISourceAndKey, "queryKey"> {
    isAdding?: boolean;
-   searchSource?: string;
+   tournamentId: string;
+   arenaId: string;
 }
 
-const CreateModal = ({
+const CompetitionModal = ({
    isOpen,
    setIsOpen,
-   source,
-   searchSource,
-   queryKey,
-   isAdding = false,
    title,
    actionBtnText,
    cancelBtnText,
    description,
+   tournamentId,
+   arenaId,
+   queryKey,
 }: IProps) => {
    const { setCurrentId } = useGetModalsContext();
    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-   const [selectedValues, setSelectedValues] = useState<string[]>([]);
-   const { mutate: createEntities } = useAddEntity({ queryKey, source });
+   const [categoriesValues, setCategoriesValues] = useState<string[]>([]);
+   const [disciplineValue, setDisciplineValue] = useState<string>("");
+   const { mutate: createEntities } = useCreateCompetition({ queryKey });
    const form = useAppForm({
-      defaultValues: defaultCreationData,
+      defaultValues: defaultCreationCompData,
    });
 
    const resetForm = () => {
       form.reset();
-      setSelectedValues([]);
+      setCategoriesValues([]);
+      setDisciplineValue("");
    };
 
    const createHandler = () => {
-      if (selectedValues.length > 0) {
+      if (disciplineValue !== "") {
          if (setCurrentId) {
             setCurrentId(null);
          }
-         createEntities(selectedValues);
+         createEntities({
+            tournamentTitle: tournamentId,
+            arenas: [
+               {
+                  arenaTitle: arenaId,
+                  info: [
+                     {
+                        discipline: disciplineValue,
+                        categories: categoriesValues,
+                     },
+                  ],
+               },
+            ],
+         });
          resetForm();
       }
    };
@@ -66,7 +83,7 @@ const CreateModal = ({
    const closeCurrentModal = (
       e: React.MouseEvent<HTMLButtonElement, MouseEvent>
    ) => {
-      if (selectedValues.length > 0) {
+      if (categoriesValues.length > 0 || disciplineValue !== "") {
          e.preventDefault();
          showConfirmHandler();
       } else {
@@ -120,13 +137,12 @@ const CreateModal = ({
                         : "Добавление только уникальных записейs"}
                   </DialogDescription>
                   <div className="text-md mb-4">
-                     <CreateForm
+                     <CompetitionForm
                         form={form}
-                        source={searchSource ? searchSource : source}
-                        queryKey={queryKey}
-                        value={selectedValues}
-                        setValue={setSelectedValues}
-                        isAdding={isAdding}
+                        disciplineValue={disciplineValue}
+                        setDisciplineValue={setDisciplineValue}
+                        categoriesValue={categoriesValues}
+                        setCategoriesValue={setCategoriesValues}
                      />
                   </div>
                   <div className="flex items-center justify-end gap-x-2">
@@ -158,4 +174,4 @@ const CreateModal = ({
    );
 };
 
-export default CreateModal;
+export default CompetitionModal;

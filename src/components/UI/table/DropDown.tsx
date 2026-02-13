@@ -7,10 +7,11 @@ import {
 import { Ellipsis, Trash } from "lucide-react";
 import { Command, CommandItem, CommandList } from "../lib-components/command";
 import { useMutation } from "@tanstack/react-query";
-import { IDeleteMany, ISourceAndKey } from "@/types/main.types";
+import { ISourceAndKey } from "@/types/main.types";
 import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
 import ConfirmModal from "../modals/ConfirmModal";
+import { IDeleteMany } from "@/types/query.types";
 
 interface IProps extends ISourceAndKey {
    ids?: string[];
@@ -21,7 +22,7 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
    const [isOpen, setIsOpen] = useState(false);
    const [isModalOpen, setIsModalOpen] = useState(false);
    const mutation = useMutation({
-      mutationFn: async (body: IDeleteMany) => {
+      mutationFn: async (body: IDeleteMany<string>) => {
          const res = await fetch(source, {
             method: "DELETE",
             headers: {
@@ -52,7 +53,7 @@ const DropDown = ({ ids, source, queryKey, resettingSelection }: IProps) => {
 
    const deleteEntityHandler = () => {
       if (ids && ids.length > 0) {
-         mutation.mutate({ ids });
+         mutation.mutate({ items: ids });
       }
    };
    const clickHandler = () => {

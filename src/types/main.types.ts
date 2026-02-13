@@ -29,7 +29,3 @@ export interface IBaseEntityWithTitleAndCount<
    data: T[];
    count: number;
 }
-
-export interface IDeleteMany {
-   ids: string[];
-}

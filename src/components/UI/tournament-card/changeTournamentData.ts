@@ -86,13 +86,13 @@ export const changeTournamentData = (
          structuredData.arenas.byId[item.arena.id] = item;
       }
 
+      if (!structuredData.orderByArena[tournament.id]) {
+         structuredData.orderByArena[tournament.id] = {};
+      }
+
       const competitionsList: Record<string, ICompetition[]> = {};
 
       for (const competition of tournament.competitions) {
-         if (!structuredData.orderByArena[tournament.id]) {
-            structuredData.orderByArena[tournament.id] = {};
-         }
-
          structuredData.tournaments.byId[tournament.id].competitions.push(
             competition.id
          );

@@ -5,7 +5,6 @@ import UpdateModal from "../../modals/UpdateModal";
 import { API } from "@/constants/api";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 import { ModalsProvider } from "@/contexts/ModalsContext";
-import CreateModal from "../../modals/CreateModal";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryClient } from "@/providers/QueryProvider";
@@ -28,55 +27,34 @@ import { createPortal } from "react-dom";
 import { IReorderCompetitionBody } from "@/types/query.types";
 import { IStructuredTournaments } from "../changeTournamentData";
 import AdminTournamentGridContent from "./AdminTournamentGridContent";
+import { useDeleteEntity } from "@/hooks/query";
 
 interface IProps {
    tournaments: IStructuredTournaments;
 }
 
-export interface IDeleteCompetitionsBody {
-   arena_id: string;
-   tournament_id: string;
-}
-
 const AdminTournamentGrid = ({ tournaments }: IProps) => {
-   const [currentId, setCurrentId] = useState<IDeleteCompetitionsBody | null>(
-      null
-   );
    const [prevTournaments, setPrevTournaments] =
       useState<IStructuredTournaments | null>(null);
-   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+   const [currentId, setCurrentId] = useState<string | null>(null);
+
    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+   const [activeDragId, setActiveDragId] = useState<string | null>(null);
    const sensors = useSensors(useSensor(PointerSensor));
-   const deleteMutation = useMutation({
-      mutationFn: async (body: IDeleteCompetitionsBody) => {
-         const res = await fetch(API.COMPETITIONS, {
-            method: "DELETE",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-         });
 
-         if (!res.ok) {
-            throw new Error("Ошибка удаления");
-         }
-
-         return res.json();
-      },
-
-      onSuccess: () => {
-         toast.success("Записи успешно удалены");
-         queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.TOURNAMENTS],
-         });
-      },
-
-      onError: () => {
-         toast.error("Ошибка при удалении");
-      },
+   const deleteMutation = useDeleteEntity({
+      queryKey: QUERY_KEYS.TOURNAMENTS,
+      source: API.TOURNAMENTS,
    });
+
+   const deleteTournamentHandler = () => {
+      if (currentId) {
+         deleteMutation.mutate(currentId);
+      }
+   };
+
    const changeOrderMutation = useMutation<
       IBaseEntityWithTitleAndCount<ITournament>,
       unknown,
@@ -115,12 +93,6 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          setPrevTournaments(null);
       },
    });
-
-   const deleteEntityHandler = () => {
-      if (currentId) {
-         deleteMutation.mutate(currentId);
-      }
-   };
 
    const getOverlayItem = () => {
       if (activeDragId) {
@@ -227,7 +199,6 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
       if (!prevTournaments || !over?.data.current || active.id === over.id)
          return;
 
-      // const activeCompetition = active.data.current as SortableItemDataType;
       const overCompetition = over.data.current as SortableItemDataType;
 
       queryClient.setQueryData<IStructuredTournaments>(
@@ -339,39 +310,28 @@ const AdminTournamentGrid = ({ tournaments }: IProps) => {
          onDragEnd={dragEndHandler}
          onDragOver={dragOverHandler}
       >
-         <ModalsProvider<IDeleteCompetitionsBody | null>
+         <ModalsProvider<string | null>
             value={{
                setCurrentId: setCurrentId,
                showDeleteModal: () => setIsDeleteModalOpen(true),
                showUpdateModal: () => setIsUpdateModalOpen(true),
-               showCreateModal: () => setIsCreateModalOpen(true),
             }}
          >
             <ConfirmModal
-               title="Удаление"
+               title="Удаление турнира"
                description="Запись невозможно будет восстановить. Вы уверены?"
                actionBtnText="Удалить"
-               confirmedAction={deleteEntityHandler}
+               confirmedAction={deleteTournamentHandler}
                isOpen={isDeleteModalOpen}
                setIsOpen={setIsDeleteModalOpen}
                btnType="delete"
             />
             <UpdateModal
-               id={currentId?.arena_id || null}
+               id={currentId}
                isOpen={isUpdateModalOpen}
                setIsOpen={setIsUpdateModalOpen}
-               source={API.ARENAS}
-               queryKey={QUERY_KEYS.TOURNAMENTS}
-            />
-            <CreateModal
-               isOpen={isCreateModalOpen}
-               setIsOpen={setIsCreateModalOpen}
-               queryKey={QUERY_KEYS.DISCIPLINES}
                source={API.TOURNAMENTS}
-               isAdding={true}
-               title="Добавление соревнованией"
-               description="Добавьте одну или несколько записей дисциплин"
-               actionBtnText="Добавить"
+               queryKey={QUERY_KEYS.TOURNAMENTS}
             />
             <AdminTournamentGridContent data={tournaments} />
          </ModalsProvider>

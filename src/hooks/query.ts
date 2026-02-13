@@ -1,5 +1,8 @@
+import { CompetitionType } from "@/components/admin/screens/new-competition/new-competition.schema";
+import { API } from "@/constants/api";
 import { queryClient } from "@/providers/QueryProvider";
 import { IBaseEntityWithTitle, ISourceAndKey } from "@/types/main.types";
+import { IDeleteMany } from "@/types/query.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -76,6 +79,38 @@ export const useDeleteEntity = ({ queryKey, source }: ISourceAndKey) => {
    return mutation;
 };
 
+export const useDeleteEntities = <T>({ queryKey, source }: ISourceAndKey) => {
+   const deleteEntities = useMutation({
+      mutationFn: async (body: IDeleteMany<T>) => {
+         const res = await fetch(source, {
+            method: "DELETE",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+         });
+
+         if (!res.ok) {
+            throw new Error("Ошибка удаления");
+         }
+
+         return res.json();
+      },
+
+      onSuccess: () => {
+         toast.success("Записи успешно удалены");
+         queryClient.invalidateQueries({
+            queryKey: [queryKey],
+         });
+      },
+
+      onError: () => {
+         toast.error("Ошибка при удалении");
+      },
+   });
+   return deleteEntities;
+};
+
 export const useGetEntity = ({
    queryKey,
    source,
@@ -123,6 +158,43 @@ export const useUpdateEntity = ({ queryKey, source, id }: IEntityWithId) => {
 
       onError: () => {
          toast.error("Ошибка при обновлении");
+      },
+   });
+   return mutation;
+};
+
+export const useCreateCompetition = ({
+   queryKey,
+}: Pick<ISourceAndKey, "queryKey">) => {
+   const mutation = useMutation({
+      mutationFn: async (body: CompetitionType) => {
+         const res = await fetch(API.COMPETITIONS, {
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               tournamentTitle: body.tournamentTitle,
+               arenas: body.arenas,
+            }),
+         });
+
+         if (!res.ok) {
+            throw new Error("Ошибка при создании");
+         }
+
+         return res.json();
+      },
+
+      onSuccess: () => {
+         toast.success("Соревнования успешно созданы");
+         queryClient.invalidateQueries({
+            queryKey: [queryKey],
+         });
+      },
+
+      onError: () => {
+         toast.error("Ошибка при создании");
       },
    });
    return mutation;
