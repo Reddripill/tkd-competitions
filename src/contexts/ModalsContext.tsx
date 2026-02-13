@@ -6,6 +6,7 @@ export interface IModalsContext<T = string> {
    showUpdateModal?: () => void;
    showCreateModal?: () => void;
    setCurrentId?: SetStateType<T>;
+   currentId?: T;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

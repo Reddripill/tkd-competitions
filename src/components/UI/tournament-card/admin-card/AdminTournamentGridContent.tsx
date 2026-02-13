@@ -47,6 +47,7 @@ const AdminTournamentGridContent = ({ data }: IProps) => {
             showDeleteModal: () => setIsDeleteArenaModalOpen(true),
             showUpdateModal: () => setIsUpdateModalOpen(true),
             showCreateModal: () => setIsCreateModalOpen(true),
+            currentId,
          }}
       >
          <ConfirmModal

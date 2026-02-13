@@ -43,8 +43,13 @@ const AdminTournamentCard = ({
       id: arenaId,
       data: { arenaId, tournamentId },
    });
-   const { showCreateModal, setCurrentId, showDeleteModal, showUpdateModal } =
-      useGetModalsContext<IArenaInfo>();
+   const {
+      showCreateModal,
+      setCurrentId,
+      showDeleteModal,
+      showUpdateModal,
+      currentId,
+   } = useGetModalsContext<IArenaInfo>();
 
    const deleteCompetition = useDeleteEntity({
       queryKey: QUERY_KEYS.TOURNAMENTS,
@@ -112,8 +117,8 @@ const AdminTournamentCard = ({
          <CompetitionModal
             isOpen={isCreateModalOpen}
             setIsOpen={setIsCreateModalOpen}
-            tournamentId={tournamentId}
-            arenaId={arenaId}
+            tournamentId={currentId?.tournament_id}
+            arenaId={currentId?.arena_id}
             queryKey={QUERY_KEYS.TOURNAMENTS}
             title="Добавление соревнованией"
             description="Добавьте одну или несколько записей дисциплин"

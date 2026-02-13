@@ -5,6 +5,19 @@ export interface IReorderCompetitionBody {
    arenaId: string;
 }
 
+export interface ICreateCompetitionBody {
+   tournamentId?: string;
+   tournamentTitle?: string;
+   arenas: {
+      arenaId?: string;
+      arenaTitle?: string;
+      info: {
+         discipline?: string;
+         categories: string[];
+      }[];
+   }[];
+}
+
 export interface IUpdateCompetitionStatusBody {
    id: string;
    isFinished: boolean;

@@ -1,8 +1,7 @@
-import { CompetitionType } from "@/components/admin/screens/new-competition/new-competition.schema";
 import { API } from "@/constants/api";
 import { queryClient } from "@/providers/QueryProvider";
 import { IBaseEntityWithTitle, ISourceAndKey } from "@/types/main.types";
-import { IDeleteMany } from "@/types/query.types";
+import { ICreateCompetitionBody, IDeleteMany } from "@/types/query.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -167,16 +166,13 @@ export const useCreateCompetition = ({
    queryKey,
 }: Pick<ISourceAndKey, "queryKey">) => {
    const mutation = useMutation({
-      mutationFn: async (body: CompetitionType) => {
+      mutationFn: async (body: ICreateCompetitionBody) => {
          const res = await fetch(API.COMPETITIONS, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-               tournamentTitle: body.tournamentTitle,
-               arenas: body.arenas,
-            }),
+            body: JSON.stringify(body),
          });
 
          if (!res.ok) {

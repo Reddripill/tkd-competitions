@@ -22,8 +22,8 @@ interface IProps
    extends IModalOptionalContent,
       Pick<ISourceAndKey, "queryKey"> {
    isAdding?: boolean;
-   tournamentId: string;
-   arenaId: string;
+   tournamentId?: string;
+   arenaId?: string;
 }
 
 const CompetitionModal = ({
@@ -53,15 +53,15 @@ const CompetitionModal = ({
    };
 
    const createHandler = () => {
-      if (disciplineValue !== "") {
+      if (disciplineValue !== "" && tournamentId && arenaId) {
          if (setCurrentId) {
             setCurrentId(null);
          }
          createEntities({
-            tournamentTitle: tournamentId,
+            tournamentId: tournamentId,
             arenas: [
                {
-                  arenaTitle: arenaId,
+                  arenaId: arenaId,
                   info: [
                      {
                         discipline: disciplineValue,
